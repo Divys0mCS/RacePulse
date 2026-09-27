@@ -29,6 +29,6 @@ class Session:
         return f"Session({self.session_type.value}, {self.race.name})"
 
     def add_lap(self, lap) -> None:
-        """Add a lap to this session, avoiding duplicate entries."""
-        if lap not in self.laps:
+        """Add a lap to this session, avoiding duplicate entries (by identity, not pace)."""
+        if not any(existing is lap for existing in self.laps):
             self.laps.append(lap)
