@@ -102,7 +102,6 @@ docker-data/
 data/raw/*
 data/processed/*
 
-*.csv
 *.parquet
 *.feather
 *.h5
@@ -119,6 +118,7 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/sample/.gitkeep
+!data/sample/*.csv
 
 # ------------------------------------------------------------
 # Machine Learning / AI Artifacts
