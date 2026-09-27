@@ -2,6 +2,7 @@
 
 This is the first place the full pipeline actually connects:
 CSVLoader -> list[Lap] -> PaceAnalyzer -> printed report.
+Telemetry is loaded and attached the same way, via TelemetryLoader.
 """
 
 import sys
@@ -11,6 +12,7 @@ from collections import defaultdict
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from analytics.loaders.csv_loader import CSVLoader
+from analytics.loaders.telemetry_loader import TelemetryLoader
 from analytics.analysis.pace_analysis import PaceAnalyzer
 
 
@@ -25,9 +27,17 @@ def group_laps_by_driver(laps):
     return laps_by_id, driver_by_id
 
 
-def main(csv_path: str) -> None:
+def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
     laps = CSVLoader().load(csv_path)
     print(f"Loaded {len(laps)} laps from {csv_path}\n")
+
+    # Telemetry is optional: only attempt it if a file was actually given,
+    # since not every laps CSV will have matching telemetry available yet.
+    telemetry_by_lap_id = {}
+    if telemetry_csv_path:
+        telemetry_list = TelemetryLoader(laps).load(telemetry_csv_path)
+        telemetry_by_lap_id = {t.lap.lap_id: t for t in telemetry_list}
+        print(f"Loaded telemetry for {len(telemetry_list)} lap(s) from {telemetry_csv_path}\n")
 
     analyzer = PaceAnalyzer()
     laps_by_id, driver_by_id = group_laps_by_driver(laps)
@@ -40,6 +50,17 @@ def main(csv_path: str) -> None:
         print(f"  Laps analyzed:   {result['laps_analyzed']}")
         print(f"  Average lap:     {result['average_lap_time_seconds']:.3f}s")
         print(f"  Fastest lap:     #{fastest.lap_number} in {fastest.lap_time_seconds:.3f}s")
+
+        for lap in sorted(driver_laps, key=lambda l: l.lap_number):
+            telemetry = telemetry_by_lap_id.get(lap.lap_id)
+            if telemetry is None:
+                continue  # no telemetry loaded for this particular lap - skip it, don't fail
+            max_speed = telemetry.max_speed_kph()
+            avg_throttle = telemetry.average_throttle_pct()
+            print(
+                f"    Lap #{lap.lap_number} telemetry: "
+                f"max speed {max_speed:.1f} kph, avg throttle {avg_throttle:.1f}%"
+            )
         print()
 
     overall = analyzer.analyze(laps)
@@ -53,4 +74,5 @@ def main(csv_path: str) -> None:
 
 if __name__ == "__main__":
     csv_path = sys.argv[1] if len(sys.argv) > 1 else "data/sample/sample_laps.csv"
-    main(csv_path)
+    telemetry_csv_path = sys.argv[2] if len(sys.argv) > 2 else "data/sample/sample_telemetry.csv"
+    main(csv_path, telemetry_csv_path)
