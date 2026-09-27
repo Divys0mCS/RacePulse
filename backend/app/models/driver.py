@@ -6,7 +6,9 @@ class Driver:
         self.name = name
         self.number = number
         self.nationality = nationality
-        self.team = team
+        self.team = None  # always start unassigned; team.add_driver() below is what links it
+        if team is not None:
+            team.add_driver(self)
 
     def __repr__(self) -> str:
         team_name = self.team.name if self.team else "No Team"

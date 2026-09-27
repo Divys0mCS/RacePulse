@@ -14,7 +14,19 @@ class Team:
         return f"Team({self.name}, {len(self.drivers)} driver(s))"
 
     def add_driver(self, driver: Driver) -> None:
-        """Add a driver to this team's roster and link them back to this team."""
-        if driver not in self.drivers:
-            self.drivers.append(driver)
+        """Add a driver to this team's roster, moving them off any previous team first."""
+        if driver.team is self:
+            return  # already here — nothing to do
+
+        if driver.team is not None:
+            driver.team.remove_driver(driver)
+
+        self.drivers.append(driver)
         driver.team = self
+
+    def remove_driver(self, driver: Driver) -> None:
+        """Remove a driver from this team's roster and clear their team link."""
+        if driver in self.drivers:
+            self.drivers.remove(driver)
+        if driver.team is self:
+            driver.team = None
