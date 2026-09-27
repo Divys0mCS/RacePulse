@@ -62,3 +62,33 @@ def test_polymorphism_any_base_analyzer_can_be_called_uniformly():
     laps = [make_lap(1, 90.0), make_lap(2, 87.5)]
     results = [analyzer.analyze(laps) for analyzer in analyzers]
     assert results[0]["laps_analyzed"] == 2
+
+from analytics.analysis.consistency_analysis import ConsistencyAnalyzer
+
+
+def test_consistency_analyzer_is_a_base_analyzer():
+    assert isinstance(ConsistencyAnalyzer(), BaseAnalyzer)
+
+
+def test_consistency_analyzer_with_no_laps():
+    result = ConsistencyAnalyzer().analyze([])
+    assert result == {"consistency_stdev_seconds": None, "laps_analyzed": 0}
+
+
+def test_consistency_analyzer_with_one_lap():
+    result = ConsistencyAnalyzer().analyze([make_lap(1, 90.0)])
+    assert result == {"consistency_stdev_seconds": None, "laps_analyzed": 1}
+
+
+def test_consistency_analyzer_identical_laps_have_zero_stdev():
+    laps = [make_lap(1, 90.0), make_lap(2, 90.0), make_lap(3, 90.0)]
+    result = ConsistencyAnalyzer().analyze(laps)
+    assert result["consistency_stdev_seconds"] == 0.0
+
+
+def test_consistency_analyzer_detects_variation():
+    consistent = [make_lap(1, 90.0), make_lap(2, 90.1), make_lap(3, 89.9)]
+    erratic = [make_lap(1, 87.0), make_lap(2, 93.0), make_lap(3, 90.0)]
+    consistent_result = ConsistencyAnalyzer().analyze(consistent)
+    erratic_result = ConsistencyAnalyzer().analyze(erratic)
+    assert consistent_result["consistency_stdev_seconds"] < erratic_result["consistency_stdev_seconds"]
