@@ -6,10 +6,13 @@ class Race:
     """Represents a single race weekend (one round of a season) held at a Track."""
 
     def __init__(self, race_id: int, name: str, season: int, round_number: int, track: Track, race_date: date):
+        if not isinstance(track, Track):
+            raise TypeError(f"track must be a Track, got {type(track).__name__}")
+
         self.race_id = race_id
         self.name = name
-        self.season = season              # routed through setter
-        self.round_number = round_number  # routed through setter
+        self.season = season
+        self.round_number = round_number
         self.track = track
         self.race_date = race_date
 
@@ -22,7 +25,7 @@ class Race:
 
     @season.setter
     def season(self, value: int) -> None:
-        if value < 1950:  # 1950 = first F1 World Championship season
+        if value < 1950:
             raise ValueError(f"season must be 1950 or later, got {value}")
         self._season = value
 

@@ -41,3 +41,7 @@ def test_add_lap_does_not_duplicate():
     s.add_lap(fake_lap)
     s.add_lap(fake_lap)
     assert s.laps.count(fake_lap) == 1
+
+def test_race_must_be_race_instance():
+    with pytest.raises(TypeError):
+        Session(session_id=1, race="British Grand Prix", session_type=SessionType.RACE)

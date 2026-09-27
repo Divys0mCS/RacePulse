@@ -1,5 +1,3 @@
-# backend/app/models/session.py
-
 from enum import Enum
 from app.models.race import Race
 
@@ -18,13 +16,15 @@ class Session:
     """Represents a single session (e.g. Qualifying, Race) within a race weekend."""
 
     def __init__(self, session_id: int, race: Race, session_type: SessionType):
+        if not isinstance(race, Race):
+            raise TypeError(f"race must be a Race, got {type(race).__name__}")
         if not isinstance(session_type, SessionType):
             raise TypeError(f"session_type must be a SessionType, got {type(session_type).__name__}")
 
         self.session_id = session_id
         self.race = race
         self.session_type = session_type
-        self.laps: list = []  # will hold Lap objects once Lap exists
+        self.laps: list = []
 
     def __repr__(self) -> str:
         return f"Session({self.session_type.value}, {self.race.name})"

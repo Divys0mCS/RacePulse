@@ -36,3 +36,7 @@ def test_round_number_rejects_zero():
 def test_race_date_is_stored():
     r = make_race(race_date=date(2024, 7, 7))
     assert r.race_date == date(2024, 7, 7)
+
+def test_track_must_be_track_instance():
+    with pytest.raises(TypeError):
+        make_race(track="Silverstone")
