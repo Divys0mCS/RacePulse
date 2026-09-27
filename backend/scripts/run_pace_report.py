@@ -2,7 +2,8 @@
 
 This is the place the full pipeline connects:
 CSVLoader -> list[Lap] -> {Pace, Consistency, Sector}Analyzer -> printed report.
-Telemetry is loaded and attached the same way, via TelemetryLoader.
+Telemetry is loaded and attached the same way, via TelemetryLoader, and the
+fastest lap's speed trace (when telemetry exists for it) is saved as HTML.
 """
 
 import sys
@@ -16,6 +17,7 @@ from analytics.loaders.telemetry_loader import TelemetryLoader
 from analytics.analysis.pace_analysis import PaceAnalyzer
 from analytics.analysis.consistency_analysis import ConsistencyAnalyzer
 from analytics.analysis.sector_analysis import SectorAnalyzer
+from analytics.visualization.speed_trace import build_speed_trace
 
 
 def group_laps_by_driver(laps):
@@ -38,6 +40,9 @@ def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
         telemetry_list = TelemetryLoader(laps).load(telemetry_csv_path)
         telemetry_by_lap_id = {t.lap.lap_id: t for t in telemetry_list}
         print(f"Loaded telemetry for {len(telemetry_list)} lap(s) from {telemetry_csv_path}\n")
+
+    output_dir = Path("data/processed")
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     pace_analyzer = PaceAnalyzer()
     consistency_analyzer = ConsistencyAnalyzer()
@@ -67,13 +72,20 @@ def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
         for lap in sorted(driver_laps, key=lambda l: l.lap_number):
             telemetry = telemetry_by_lap_id.get(lap.lap_id)
             if telemetry is None:
-                continue  # no telemetry loaded for this particular lap - skip it, don't fail
+                continue
             max_speed = telemetry.max_speed_kph()
             avg_throttle = telemetry.average_throttle_pct()
             print(
                 f"    Lap #{lap.lap_number} telemetry: "
                 f"max speed {max_speed:.1f} kph, avg throttle {avg_throttle:.1f}%"
             )
+
+        fastest_telemetry = telemetry_by_lap_id.get(fastest.lap_id)
+        if fastest_telemetry is not None:
+            fig = build_speed_trace(fastest_telemetry)
+            output_path = output_dir / f"speed_trace_driver{driver.number}_lap{fastest.lap_number}.html"
+            fig.write_html(output_path)
+            print(f"  Saved speed trace for fastest lap -> {output_path}")
         print()
 
     overall_pace = pace_analyzer.analyze(laps)
