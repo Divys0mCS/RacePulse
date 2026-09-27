@@ -132,7 +132,7 @@ data/processed/*
 *.faiss
 *.index
 
-models/
+backend/ml_models/
 model_cache/
 embeddings/
 
