@@ -8,6 +8,7 @@ from app.models.race import Race
 from app.models.track import Track
 from app.models.driver import Driver
 from app.models.team import Team
+from analytics.analysis.sector_analysis import SectorAnalyzer
 
 
 def make_session():
@@ -21,9 +22,47 @@ def make_driver():
     return Driver(driver_id=1, name="Max Verstappen", number=1, nationality="Dutch", team=team)
 
 
-def make_lap(lap_number, lap_time_seconds):
-    return Lap(lap_id=lap_number, session=make_session(), driver=make_driver(), lap_number=lap_number, lap_time_seconds=lap_time_seconds)
+def make_lap(lap_number, lap_time_seconds, sector_times=None):
+    return Lap(
+        lap_id=lap_number,
+        session=make_session(),
+        driver=make_driver(),
+        lap_number=lap_number,
+        lap_time_seconds=lap_time_seconds,
+        sector_times=sector_times,
+    )
 
+def test_sector_analyzer_is_a_base_analyzer():
+
+    assert isinstance(SectorAnalyzer(), BaseAnalyzer)
+
+
+def test_sector_analyzer_with_no_laps():
+
+    result = SectorAnalyzer().analyze([])
+
+    assert result == {
+        "fastest_sector_1_seconds": None,
+        "fastest_sector_2_seconds": None,
+        "fastest_sector_3_seconds": None,
+        "laps_analyzed": 0,
+    }
+
+
+def test_sector_analyzer_finds_fastest_time_in_each_sector():
+
+    laps = [
+        make_lap(1, 90.0, sector_times=(29.5, 31.0, 29.5)),
+        make_lap(2, 87.5, sector_times=(28.4, 30.1, 29.0)),
+        make_lap(3, 88.9, sector_times=(28.8, 30.4, 29.7)),
+    ]
+
+    result = SectorAnalyzer().analyze(laps)
+
+    assert result["fastest_sector_1_seconds"] == 28.4
+    assert result["fastest_sector_2_seconds"] == 30.1
+    assert result["fastest_sector_3_seconds"] == 29.0
+    assert result["laps_analyzed"] == 3
 
 def test_base_analyzer_cannot_be_instantiated_directly():
     with pytest.raises(TypeError):
