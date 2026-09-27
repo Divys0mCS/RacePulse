@@ -1,7 +1,4 @@
-from datetime import date
 from app.models.track import Track
-
-
 class Race:
     """Represents a single race weekend (one round of a season) held at a Track."""
 

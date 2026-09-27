@@ -1,9 +1,5 @@
-# backend/app/models/lap.py
-
 from app.models.session import Session
 from app.models.driver import Driver
-
-
 class Lap:
     """Represents a single completed lap by a driver within a session."""
 

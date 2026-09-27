@@ -1,6 +1,4 @@
 from app.models.driver import Driver
-
-
 class Team:
     """Represents a motorsport team and the drivers who race for it."""
 

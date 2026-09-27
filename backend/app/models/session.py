@@ -1,7 +1,6 @@
 from enum import Enum
 from app.models.race import Race
 
-
 class SessionType(Enum):
     FP1 = "Practice 1"
     FP2 = "Practice 2"

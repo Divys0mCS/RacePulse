@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from app.models.lap import Lap
-
-
 @dataclass(frozen=True)
 class TelemetrySample:
     """A single telemetry reading at one point along a lap. Immutable once recorded."""
