@@ -130,3 +130,8 @@ def test_invalid_session_type_raises_value_error(tmp_path):
         sector_2=30.0,
         sector_3=32.0,
     ).replace(",race,", ",not_a_session,")
+
+    path = write_csv(tmp_path, [bad_row])
+
+    with pytest.raises(ValueError, match="Unrecognized session_type"):
+        CSVLoader().load(path)
