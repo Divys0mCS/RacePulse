@@ -1,7 +1,7 @@
-"""End-to-end demo: load a laps CSV, then run PaceAnalyzer per driver.
+"""End-to-end demo: load a laps CSV, then run every analyzer per driver.
 
-This is the first place the full pipeline actually connects:
-CSVLoader -> list[Lap] -> PaceAnalyzer -> printed report.
+This is the place the full pipeline connects:
+CSVLoader -> list[Lap] -> {Pace, Consistency, Sector}Analyzer -> printed report.
 Telemetry is loaded and attached the same way, via TelemetryLoader.
 """
 
@@ -14,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from analytics.loaders.csv_loader import CSVLoader
 from analytics.loaders.telemetry_loader import TelemetryLoader
 from analytics.analysis.pace_analysis import PaceAnalyzer
+from analytics.analysis.consistency_analysis import ConsistencyAnalyzer
+from analytics.analysis.sector_analysis import SectorAnalyzer
 
 
 def group_laps_by_driver(laps):
@@ -31,25 +33,36 @@ def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
     laps = CSVLoader().load(csv_path)
     print(f"Loaded {len(laps)} laps from {csv_path}\n")
 
-    # Telemetry is optional: only attempt it if a file was actually given,
-    # since not every laps CSV will have matching telemetry available yet.
     telemetry_by_lap_id = {}
     if telemetry_csv_path:
         telemetry_list = TelemetryLoader(laps).load(telemetry_csv_path)
         telemetry_by_lap_id = {t.lap.lap_id: t for t in telemetry_list}
         print(f"Loaded telemetry for {len(telemetry_list)} lap(s) from {telemetry_csv_path}\n")
 
-    analyzer = PaceAnalyzer()
+    pace_analyzer = PaceAnalyzer()
+    consistency_analyzer = ConsistencyAnalyzer()
+    sector_analyzer = SectorAnalyzer()
     laps_by_id, driver_by_id = group_laps_by_driver(laps)
 
     for driver_id, driver_laps in laps_by_id.items():
         driver = driver_by_id[driver_id]
-        result = analyzer.analyze(driver_laps)
-        fastest = result["fastest_lap"]
+        pace = pace_analyzer.analyze(driver_laps)
+        consistency = consistency_analyzer.analyze(driver_laps)
+        sectors = sector_analyzer.analyze(driver_laps)
+        fastest = pace["fastest_lap"]
+
         print(f"{driver.name} ({driver.team.name})")
-        print(f"  Laps analyzed:   {result['laps_analyzed']}")
-        print(f"  Average lap:     {result['average_lap_time_seconds']:.3f}s")
+        print(f"  Laps analyzed:   {pace['laps_analyzed']}")
+        print(f"  Average lap:     {pace['average_lap_time_seconds']:.3f}s")
         print(f"  Fastest lap:     #{fastest.lap_number} in {fastest.lap_time_seconds:.3f}s")
+        if consistency["consistency_stdev_seconds"] is not None:
+            print(f"  Consistency:     stdev {consistency['consistency_stdev_seconds']:.3f}s")
+        print(
+            f"  Best sectors:    "
+            f"S1 {sectors['fastest_sector_1_seconds']:.3f}s / "
+            f"S2 {sectors['fastest_sector_2_seconds']:.3f}s / "
+            f"S3 {sectors['fastest_sector_3_seconds']:.3f}s"
+        )
 
         for lap in sorted(driver_laps, key=lambda l: l.lap_number):
             telemetry = telemetry_by_lap_id.get(lap.lap_id)
@@ -63,12 +76,19 @@ def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
             )
         print()
 
-    overall = analyzer.analyze(laps)
-    fastest_overall = overall["fastest_lap"]
+    overall_pace = pace_analyzer.analyze(laps)
+    overall_sectors = sector_analyzer.analyze(laps)
+    fastest_overall = overall_pace["fastest_lap"]
     print("Overall session")
     print(
         f"  Fastest lap:     {fastest_overall.driver.name}, "
         f"#{fastest_overall.lap_number} in {fastest_overall.lap_time_seconds:.3f}s"
+    )
+    print(
+        f"  Best sectors:    "
+        f"S1 {overall_sectors['fastest_sector_1_seconds']:.3f}s / "
+        f"S2 {overall_sectors['fastest_sector_2_seconds']:.3f}s / "
+        f"S3 {overall_sectors['fastest_sector_3_seconds']:.3f}s"
     )
 
 
