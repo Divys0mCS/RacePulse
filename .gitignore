@@ -1,0 +1,213 @@
+# ============================================================
+# RacePulse - .gitignore
+# ============================================================
+
+# ------------------------------------------------------------
+# Environment & Secrets
+# ------------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Keep the example configuration
+!.env.example
+
+# ------------------------------------------------------------
+# Python
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ------------------------------------------------------------
+# FastAPI / Backend
+# ------------------------------------------------------------
+*.log
+logs/
+
+# Local SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# ------------------------------------------------------------
+# Node.js / Next.js
+# ------------------------------------------------------------
+node_modules/
+.next/
+out/
+
+# Vercel
+.vercel/
+
+# npm / yarn / pnpm
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ------------------------------------------------------------
+# Frontend Environment Files
+# ------------------------------------------------------------
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# ------------------------------------------------------------
+# Database / Local Infrastructure
+# ------------------------------------------------------------
+postgres-data/
+redis-data/
+docker-data/
+
+# Local database backups (commit intentional seed/schema scripts with !path/to/file.sql)
+*.sql
+*.dump
+*.backup
+
+# ------------------------------------------------------------
+# Data Science / Telemetry Data
+# ------------------------------------------------------------
+data/raw/*
+data/processed/*
+
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pickle
+*.pkl
+
+*.zip
+*.tar
+*.gz
+*.7z
+
+# Keep placeholder files
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/sample/.gitkeep
+
+# ------------------------------------------------------------
+# Machine Learning / AI Artifacts
+# ------------------------------------------------------------
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+
+*.faiss
+*.index
+
+models/
+model_cache/
+embeddings/
+
+# ------------------------------------------------------------
+# IDE / Editors
+# ------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+.idea/
+*.iml
+.vs/
+
+*.swp
+*.swo
+
+*.sublime-workspace
+*.sublime-project
+
+# ------------------------------------------------------------
+# Operating System
+# ------------------------------------------------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.fseventsd
+.Trashes
+.Spotlight-V100
+
+# Linux
+*~
+.directory
+
+# ------------------------------------------------------------
+# Temporary Files
+# ------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+tmp/
+temp/
+
+# ------------------------------------------------------------
+# Secrets / Credentials
+# ------------------------------------------------------------
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+credentials.json
+service-account.json
+secrets.json
+
+# ------------------------------------------------------------
+# Generated Documentation
+# ------------------------------------------------------------
+docs/_build/
+
+# ------------------------------------------------------------
+# Project-specific generated files
+# ------------------------------------------------------------
+racepulse.db
+racepulse.sqlite3
+*.generated.*
+.cache/
+.cache-data/
