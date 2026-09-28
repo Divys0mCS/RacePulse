@@ -2,6 +2,7 @@ from pathlib import Path
 
 from analytics.analysis.pace_analysis import PaceAnalyzer
 from analytics.loaders.csv_loader import CSVLoader
+from analytics.analysis.sector_analysis import SectorAnalyzer
 
 
 class PaceAnalysisService:
@@ -18,3 +19,12 @@ class PaceAnalysisService:
             "average_lap_seconds": result["average_lap_time_seconds"],
             "laps_analyzed": result["laps_analyzed"],
         }
+
+class SectorAnalysisService:
+    """Coordinates lap loading and sector analysis."""
+
+    def analyze(self, csv_path: str | Path) -> dict:
+        """Load laps from csv_path and return sector analysis results."""
+
+        laps = CSVLoader().load(csv_path)
+        return SectorAnalyzer().analyze(laps)

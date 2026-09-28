@@ -2,8 +2,10 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.services.analysis_service import PaceAnalysisService
-
+from app.services.analysis_service import (
+    PaceAnalysisService,
+    SectorAnalysisService,
+)
 
 router = APIRouter(
     prefix="/api/v1/analysis",
@@ -19,3 +21,12 @@ def get_pace_analysis() -> dict:
     csv_path = backend_dir / "data" / "sample" / "sample_laps.csv"
 
     return PaceAnalysisService().analyze(csv_path)
+
+@router.get("/sector")
+def get_sector_analysis() -> dict:
+    """Return sector analysis for the sample lap dataset."""
+
+    backend_dir = Path(__file__).resolve().parents[3]
+    csv_path = backend_dir / "data" / "sample" / "sample_laps.csv"
+
+    return SectorAnalysisService().analyze(csv_path)
