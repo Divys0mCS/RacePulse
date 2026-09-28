@@ -18,6 +18,8 @@ from analytics.analysis.pace_analysis import PaceAnalyzer
 from analytics.analysis.consistency_analysis import ConsistencyAnalyzer
 from analytics.analysis.sector_analysis import SectorAnalyzer
 from analytics.visualization.speed_trace import build_speed_trace
+from analytics.visualization.lap_chart import build_lap_chart
+from analytics.visualization.sector_chart import build_sector_chart
 
 
 def group_laps_by_driver(laps):
@@ -55,6 +57,19 @@ def main(csv_path: str, telemetry_csv_path: str | None = None) -> None:
         consistency = consistency_analyzer.analyze(driver_laps)
         sectors = sector_analyzer.analyze(driver_laps)
         fastest = pace["fastest_lap"]
+        lap_chart = build_lap_chart(driver_laps)
+        lap_chart_path = (
+            output_dir / f"lap_chart_driver{driver.number}.html"
+        )
+        lap_chart.write_html(lap_chart_path)
+        print(f"  Saved lap chart -> {lap_chart_path}")
+
+        sector_chart = build_sector_chart(driver_laps)
+        sector_chart_path = (
+            output_dir / f"sector_chart_driver{driver.number}.html"
+        )
+        sector_chart.write_html(sector_chart_path)
+        print(f"  Saved sector chart -> {sector_chart_path}")
 
         print(f"{driver.name} ({driver.team.name})")
         print(f"  Laps analyzed:   {pace['laps_analyzed']}")
