@@ -20,11 +20,11 @@ plotly>=6.0
 # ------------------------------------------------------------
 # Phase 3 — FastAPI
 # ------------------------------------------------------------
-# fastapi>=0.141
-# uvicorn[standard]>=0.52
-# pydantic>=2.13
-# pydantic-settings>=2.15
-# python-multipart>=0.0.29
+fastapi>=0.141
+uvicorn[standard]>=0.52
+pydantic>=2.13
+pydantic-settings>=2.15
+python-multipart>=0.0.29
 
 # ------------------------------------------------------------
 # Phase 4 — Database (PostgreSQL)

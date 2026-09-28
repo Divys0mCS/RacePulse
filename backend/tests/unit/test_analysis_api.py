@@ -94,3 +94,42 @@ def test_lap_analysis_endpoint_returns_consistent_lengths():
     assert data["laps_analyzed"] > 0
     assert len(data["lap_times_seconds"]) == data["laps_analyzed"]
     assert len(data["lap_time_deltas_seconds"]) == data["laps_analyzed"] - 1
+
+def test_analysis_openapi_contains_response_schemas():
+    schema = app.openapi()
+
+    components = schema["components"]["schemas"]
+
+    assert "PaceAnalysisResponse" in components
+    assert "SectorAnalysisResponse" in components
+    assert "ConsistencyAnalysisResponse" in components
+    assert "LapAnalysisResponse" in components
+
+
+def test_analysis_endpoints_reference_response_schemas():
+    schema = app.openapi()
+    paths = schema["paths"]
+
+    assert (
+        paths["/api/v1/analysis/pace"]["get"]["responses"]["200"]["content"]
+        ["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/PaceAnalysisResponse"
+    )
+
+    assert (
+        paths["/api/v1/analysis/sector"]["get"]["responses"]["200"]["content"]
+        ["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/SectorAnalysisResponse"
+    )
+
+    assert (
+        paths["/api/v1/analysis/consistency"]["get"]["responses"]["200"]["content"]
+        ["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/ConsistencyAnalysisResponse"
+    )
+
+    assert (
+        paths["/api/v1/analysis/laps"]["get"]["responses"]["200"]["content"]
+        ["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/LapAnalysisResponse"
+    )
