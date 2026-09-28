@@ -73,3 +73,24 @@ def test_consistency_analysis_endpoint_returns_valid_values():
     assert data["consistency_stdev_seconds"] is not None
     assert data["consistency_stdev_seconds"] >= 0
     assert data["laps_analyzed"] > 0
+    
+def test_lap_analysis_endpoint_returns_results():
+    response = client.get("/api/v1/analysis/laps")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "laps_analyzed" in data
+    assert "lap_times_seconds" in data
+    assert "lap_time_deltas_seconds" in data
+
+
+def test_lap_analysis_endpoint_returns_consistent_lengths():
+    response = client.get("/api/v1/analysis/laps")
+
+    data = response.json()
+
+    assert data["laps_analyzed"] > 0
+    assert len(data["lap_times_seconds"]) == data["laps_analyzed"]
+    assert len(data["lap_time_deltas_seconds"]) == data["laps_analyzed"] - 1
