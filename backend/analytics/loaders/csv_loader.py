@@ -70,6 +70,7 @@ class CSVLoader:
         self._teams: dict[str, Team] = {}
         self._drivers: dict[str, Driver] = {}
         self._next_lap_id = 1
+        self._seen_laps: set[tuple[int, int, int]] = set()
 
     def load(self, csv_path: str | Path) -> list[Lap]:
         """Read the CSV at csv_path and return one Lap per row, fully linked."""
@@ -109,11 +110,27 @@ class CSVLoader:
         team = self._get_or_create_team(row)
         driver = self._get_or_create_driver(row, team)
 
+        lap_number = int(row["lap_number"])
+
+        duplicate_key = (
+            session.session_id,
+            driver.driver_id,
+            lap_number,
+        )
+
+        if duplicate_key in self._seen_laps:
+            raise ValueError(
+                f"duplicate lap data: "
+                f"session={session.session_type.name}, "
+                f"driver={driver.name}, "
+                f"lap_number={lap_number}"
+            )
+
         lap = Lap(
             lap_id=self._next_lap_id,
             session=session,
             driver=driver,
-            lap_number=int(row["lap_number"]),
+            lap_number=lap_number,
             lap_time_seconds=float(row["lap_time_seconds"]),
             sector_times=(
                 float(row["sector_1_time_seconds"]),
@@ -125,6 +142,7 @@ class CSVLoader:
         self._next_lap_id += 1
 
         session.add_lap(lap)
+        self._seen_laps.add(duplicate_key)
 
         return lap
 
@@ -207,3 +225,4 @@ class CSVLoader:
             )
 
         return self._drivers[key]
+    

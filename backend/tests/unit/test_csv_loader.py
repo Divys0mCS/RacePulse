@@ -1,5 +1,3 @@
-# backend/tests/unit/test_csv_loader.py
-
 import pytest
 
 from analytics.loaders.csv_loader import CSVLoader
@@ -61,17 +59,28 @@ def test_missing_file_raises_file_not_found():
 
 def test_missing_column_raises_value_error(tmp_path):
     bad_header = "season,round_number,race_name\n"
-    path = write_csv(tmp_path, ["2024,10,British Grand Prix\n"], header=bad_header)
+    path = write_csv(
+        tmp_path,
+        ["2024,10,British Grand Prix\n"],
+        header=bad_header,
+    )
+
     with pytest.raises(ValueError, match="missing required column"):
         CSVLoader().load(path)
 
 
 def test_loads_one_lap_per_row(tmp_path):
-    path = write_csv(tmp_path, [verstappen_row(1, 90.0), verstappen_row(2, 87.5)])
+    path = write_csv(
+        tmp_path,
+        [verstappen_row(1, 90.0), verstappen_row(2, 87.5)],
+    )
+
     laps = CSVLoader().load(path)
+
     assert len(laps) == 2
     assert [lap.lap_number for lap in laps] == [1, 2]
     assert laps[1].lap_time_seconds == 87.5
+
 
 def test_loads_sector_times(tmp_path):
     path = write_csv(tmp_path, [verstappen_row(1, 88.0)])
@@ -82,22 +91,37 @@ def test_loads_sector_times(tmp_path):
 
 
 def test_same_driver_across_rows_is_one_shared_object(tmp_path):
-    path = write_csv(tmp_path, [verstappen_row(1, 90.0), verstappen_row(2, 87.5)])
+    path = write_csv(
+        tmp_path,
+        [verstappen_row(1, 90.0), verstappen_row(2, 87.5)],
+    )
+
     laps = CSVLoader().load(path)
+
     assert laps[0].driver is laps[1].driver
     assert laps[0].driver.name == "Max Verstappen"
 
 
 def test_same_race_session_across_rows_is_one_shared_object(tmp_path):
-    path = write_csv(tmp_path, [verstappen_row(1, 90.0), hamilton_row(1, 91.2)])
+    path = write_csv(
+        tmp_path,
+        [verstappen_row(1, 90.0), hamilton_row(1, 91.2)],
+    )
+
     laps = CSVLoader().load(path)
+
     assert laps[0].session is laps[1].session
     assert laps[0].session.race.name == "British Grand Prix"
 
 
 def test_different_drivers_get_different_objects(tmp_path):
-    path = write_csv(tmp_path, [verstappen_row(1, 90.0), hamilton_row(1, 91.2)])
+    path = write_csv(
+        tmp_path,
+        [verstappen_row(1, 90.0), hamilton_row(1, 91.2)],
+    )
+
     laps = CSVLoader().load(path)
+
     assert laps[0].driver is not laps[1].driver
     assert laps[0].driver.team is not laps[1].driver.team
 
@@ -105,13 +129,20 @@ def test_different_drivers_get_different_objects(tmp_path):
 def test_malformed_lap_time_raises_value_error(tmp_path):
     bad_row = verstappen_row(1, "not-a-number")
     path = write_csv(tmp_path, [bad_row])
+
     with pytest.raises(ValueError, match="Row 2"):
         CSVLoader().load(path)
 
+
 def test_add_lap_populates_session_laps(tmp_path):
-    path = write_csv(tmp_path, [verstappen_row(1, 90.0), verstappen_row(2, 87.5)])
+    path = write_csv(
+        tmp_path,
+        [verstappen_row(1, 90.0), verstappen_row(2, 87.5)],
+    )
+
     laps = CSVLoader().load(path)
     session = laps[0].session
+
     assert len(session.laps) == 2
     assert laps[0] in session.laps
     assert laps[1] in session.laps
@@ -136,7 +167,72 @@ def test_invalid_session_type_raises_value_error(tmp_path):
     with pytest.raises(ValueError, match="Unrecognized session_type"):
         CSVLoader().load(path)
 
+
 def test_nan_lap_time_in_csv_raises_value_error(tmp_path):
     path = write_csv(tmp_path, [verstappen_row(1, "nan")])
+
     with pytest.raises(ValueError, match="Row 2"):
         CSVLoader().load(path)
+
+
+def test_duplicate_session_driver_lap_raises_value_error(tmp_path):
+    rows = [
+        verstappen_row(1, "90.000"),
+        verstappen_row(1, "91.000"),
+    ]
+
+    path = write_csv(tmp_path, rows)
+
+    with pytest.raises(ValueError, match="duplicate"):
+        CSVLoader().load(path)
+
+
+def test_same_driver_different_lap_is_allowed(tmp_path):
+    rows = [
+        verstappen_row(1, "90.000"),
+        verstappen_row(2, "91.000"),
+    ]
+
+    path = write_csv(tmp_path, rows)
+
+    laps = CSVLoader().load(path)
+
+    assert len(laps) == 2
+
+
+def test_different_driver_same_lap_is_allowed(tmp_path):
+    rows = [
+        verstappen_row(1, "90.000"),
+        hamilton_row(1, "91.000"),
+    ]
+
+    path = write_csv(tmp_path, rows)
+
+    laps = CSVLoader().load(path)
+
+    assert len(laps) == 2
+
+
+def test_same_driver_same_lap_in_different_sessions_is_allowed(tmp_path):
+    row1 = verstappen_row(1, "90.000")
+
+    row2 = ROW_TEMPLATE.format(
+        team="Red Bull Racing",
+        team_country="Austria",
+        number=1,
+        name="Max Verstappen",
+        nat="Dutch",
+        lap_num=1,
+        lap_time="91.000",
+        sector_1=28.0,
+        sector_2=30.0,
+        sector_3=30.0,
+    )
+
+    row2 = row2.replace(",race,", ",qualifying,", 1)
+
+    path = write_csv(tmp_path, [row1, row2])
+
+    laps = CSVLoader().load(path)
+
+    assert len(laps) == 2
