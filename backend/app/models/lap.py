@@ -1,5 +1,9 @@
+import math
+
 from app.models.session import Session
 from app.models.driver import Driver
+
+
 class Lap:
     """Represents a single completed lap by a driver within a session."""
 
@@ -43,8 +47,10 @@ class Lap:
 
     @lap_time_seconds.setter
     def lap_time_seconds(self, value: float) -> None:
-        if value <= 0:
-            raise ValueError(f"lap_time_seconds must be positive, got {value}")
+        # Validate the GOOD condition, not the bad one: NaN fails every comparison,
+        # so "if value <= 0: reject" lets NaN straight through.
+        if not (math.isfinite(value) and value > 0):
+            raise ValueError(f"lap_time_seconds must be a finite positive number, got {value}")
         self._lap_time_seconds = value
 
     @property
@@ -54,8 +60,8 @@ class Lap:
     @sector_times.setter
     def sector_times(self, value) -> None:
         if value is not None:
-            if len(value) != 3 or any(t <= 0 for t in value):
-                raise ValueError("sector_times must be a tuple of exactly 3 positive numbers, or None")
+            if len(value) != 3 or not all(math.isfinite(t) and t > 0 for t in value):
+                raise ValueError("sector_times must be a tuple of exactly 3 finite positive numbers, or None")
         self._sector_times = value
 
     def __eq__(self, other) -> bool:

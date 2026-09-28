@@ -100,3 +100,19 @@ def test_min_finds_fastest_lap():
             make_lap(lap_number=3, lap_time_seconds=88.9)]
     fastest = min(laps)
     assert fastest.lap_number == 2
+
+def test_lap_time_rejects_nan():
+    with pytest.raises(ValueError):
+        make_lap(lap_time_seconds=float("nan"))
+
+
+def test_lap_time_rejects_infinity():
+    with pytest.raises(ValueError):
+        make_lap(lap_time_seconds=float("inf"))
+
+
+def test_sector_times_reject_nan_and_infinity():
+    with pytest.raises(ValueError):
+        make_lap(sector_times=(28.0, float("nan"), 30.0))
+    with pytest.raises(ValueError):
+        make_lap(sector_times=(28.0, 30.0, float("inf")))

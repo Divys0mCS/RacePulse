@@ -135,3 +135,8 @@ def test_invalid_session_type_raises_value_error(tmp_path):
 
     with pytest.raises(ValueError, match="Unrecognized session_type"):
         CSVLoader().load(path)
+
+def test_nan_lap_time_in_csv_raises_value_error(tmp_path):
+    path = write_csv(tmp_path, [verstappen_row(1, "nan")])
+    with pytest.raises(ValueError, match="Row 2"):
+        CSVLoader().load(path)
