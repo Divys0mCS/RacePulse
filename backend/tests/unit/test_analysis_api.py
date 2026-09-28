@@ -53,3 +53,23 @@ def test_sector_analysis_endpoint_returns_valid_numbers():
     assert data["fastest_sector_2_seconds"] > 0
     assert data["fastest_sector_3_seconds"] > 0
     assert data["laps_analyzed"] > 0
+    
+def test_consistency_analysis_endpoint_returns_results():
+    response = client.get("/api/v1/analysis/consistency")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "consistency_stdev_seconds" in data
+    assert "laps_analyzed" in data
+
+
+def test_consistency_analysis_endpoint_returns_valid_values():
+    response = client.get("/api/v1/analysis/consistency")
+
+    data = response.json()
+
+    assert data["consistency_stdev_seconds"] is not None
+    assert data["consistency_stdev_seconds"] >= 0
+    assert data["laps_analyzed"] > 0

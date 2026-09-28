@@ -3,6 +3,7 @@ from pathlib import Path
 from analytics.analysis.pace_analysis import PaceAnalyzer
 from analytics.loaders.csv_loader import CSVLoader
 from analytics.analysis.sector_analysis import SectorAnalyzer
+from analytics.analysis.consistency_analysis import ConsistencyAnalyzer
 
 
 class PaceAnalysisService:
@@ -28,3 +29,12 @@ class SectorAnalysisService:
 
         laps = CSVLoader().load(csv_path)
         return SectorAnalyzer().analyze(laps)
+
+class ConsistencyAnalysisService:
+    """Coordinates lap loading and consistency analysis."""
+
+    def analyze(self, csv_path: str | Path) -> dict:
+        """Load laps from csv_path and return consistency analysis results."""
+
+        laps = CSVLoader().load(csv_path)
+        return ConsistencyAnalyzer().analyze(laps)
