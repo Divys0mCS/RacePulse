@@ -9,7 +9,7 @@ from app.models.track import Track
 from app.models.driver import Driver
 from app.models.team import Team
 from analytics.analysis.sector_analysis import SectorAnalyzer
-
+from analytics.analysis.lap_analysis import LapAnalyzer
 
 def make_session():
     track = Track(track_id=1, name="Silverstone", country="United Kingdom", length_km=5.891, number_of_corners=18)
@@ -131,3 +131,49 @@ def test_consistency_analyzer_detects_variation():
     consistent_result = ConsistencyAnalyzer().analyze(consistent)
     erratic_result = ConsistencyAnalyzer().analyze(erratic)
     assert consistent_result["consistency_stdev_seconds"] < erratic_result["consistency_stdev_seconds"]
+
+def test_lap_analyzer_is_a_base_analyzer():
+    assert isinstance(LapAnalyzer(), BaseAnalyzer)
+
+
+def test_lap_analyzer_with_no_laps():
+    result = LapAnalyzer().analyze([])
+
+    assert result == {
+        "laps_analyzed": 0,
+        "lap_times_seconds": [],
+        "lap_time_deltas_seconds": [],
+    }
+
+
+def test_lap_analyzer_returns_lap_times_in_lap_order():
+    laps = [
+        make_lap(3, 88.9),
+        make_lap(1, 90.0),
+        make_lap(2, 87.5),
+    ]
+
+    result = LapAnalyzer().analyze(laps)
+
+    assert result["laps_analyzed"] == 3
+    assert result["lap_times_seconds"] == [90.0, 87.5, 88.9]
+
+
+def test_lap_analyzer_calculates_consecutive_lap_deltas():
+    laps = [
+        make_lap(1, 90.0),
+        make_lap(2, 87.5),
+        make_lap(3, 88.9),
+    ]
+
+    result = LapAnalyzer().analyze(laps)
+
+    assert result["lap_time_deltas_seconds"] == [-2.5, 1.4]
+def test_lap_analyzer_with_one_lap():
+    result = LapAnalyzer().analyze([make_lap(1, 90.0)])
+
+    assert result == {
+        "laps_analyzed": 1,
+        "lap_times_seconds": [90.0],
+        "lap_time_deltas_seconds": [],
+    }
