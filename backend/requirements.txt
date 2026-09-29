@@ -29,10 +29,10 @@ python-multipart>=0.0.29
 # ------------------------------------------------------------
 # Phase 4 — Database (PostgreSQL)
 # ------------------------------------------------------------
-# sqlalchemy>=2.0.51
-# alembic>=1.19
-# psycopg2-binary>=2.9.12
-# # or, if you go async instead: asyncpg>=0.31
+sqlalchemy>=2.0.51
+alembic>=1.19
+psycopg2-binary>=2.9.12
+# asyncpg>=0.31
 
 # ------------------------------------------------------------
 # Phase 6 — Authentication
