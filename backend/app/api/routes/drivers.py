@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_driver_service
 from app.database.services.driver_service import DriverService
@@ -31,9 +31,14 @@ def create_driver(
     response_model=list[DriverResponse],
 )
 def list_drivers(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: DriverService = Depends(get_driver_service),
 ) -> list[DriverResponse]:
-    return service.list_drivers()
+    return service.list_drivers(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(

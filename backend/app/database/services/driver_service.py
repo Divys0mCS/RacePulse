@@ -31,8 +31,15 @@ class DriverService:
     def get_driver(self, driver_id: int) -> DriverModel | None:
         return self.repository.get_by_id(driver_id)
 
-    def list_drivers(self) -> list[DriverModel]:
-        return self.repository.list_all()
+    def list_drivers(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[DriverModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_driver(self, driver_id: int) -> bool:
         driver = self.repository.get_by_id(driver_id)

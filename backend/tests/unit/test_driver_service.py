@@ -56,7 +56,9 @@ def test_get_driver_delegates_to_repository():
     service = DriverService(db)
 
     driver = make_driver()
-    service.repository.get_by_id = MagicMock(return_value=driver)
+    service.repository.get_by_id = MagicMock(
+        return_value=driver
+    )
 
     result = service.get_driver(1)
 
@@ -68,7 +70,9 @@ def test_get_driver_returns_none_when_not_found():
     db = MagicMock()
     service = DriverService(db)
 
-    service.repository.get_by_id = MagicMock(return_value=None)
+    service.repository.get_by_id = MagicMock(
+        return_value=None
+    )
 
     result = service.get_driver(999)
 
@@ -76,17 +80,27 @@ def test_get_driver_returns_none_when_not_found():
     service.repository.get_by_id.assert_called_once_with(999)
 
 
-def test_list_drivers_delegates_to_repository():
+def test_list_drivers_delegates_pagination_to_repository():
     db = MagicMock()
     service = DriverService(db)
 
     drivers = [make_driver()]
-    service.repository.list_all = MagicMock(return_value=drivers)
 
-    result = service.list_drivers()
+    service.repository.list_all = MagicMock(
+        return_value=drivers
+    )
+
+    result = service.list_drivers(
+        skip=20,
+        limit=10,
+    )
 
     assert result == drivers
-    service.repository.list_all.assert_called_once_with()
+
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )
 
 
 def test_delete_driver_commits_when_driver_exists():
@@ -94,7 +108,10 @@ def test_delete_driver_commits_when_driver_exists():
     service = DriverService(db)
 
     driver = make_driver()
-    service.repository.get_by_id = MagicMock(return_value=driver)
+
+    service.repository.get_by_id = MagicMock(
+        return_value=driver
+    )
     service.repository.delete = MagicMock()
 
     result = service.delete_driver(1)
@@ -109,7 +126,9 @@ def test_delete_driver_returns_false_when_driver_does_not_exist():
     db = MagicMock()
     service = DriverService(db)
 
-    service.repository.get_by_id = MagicMock(return_value=None)
+    service.repository.get_by_id = MagicMock(
+        return_value=None
+    )
     service.repository.delete = MagicMock()
 
     result = service.delete_driver(999)
@@ -124,7 +143,10 @@ def test_delete_driver_rolls_back_when_repository_fails():
     service = DriverService(db)
 
     driver = make_driver()
-    service.repository.get_by_id = MagicMock(return_value=driver)
+
+    service.repository.get_by_id = MagicMock(
+        return_value=driver
+    )
     service.repository.delete = MagicMock(
         side_effect=RuntimeError("delete failed")
     )
