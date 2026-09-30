@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_team_service
 from app.database.services.team_service import TeamService
@@ -31,9 +31,14 @@ def create_team(
     response_model=list[TeamResponse],
 )
 def list_teams(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: TeamService = Depends(get_team_service),
 ) -> list[TeamResponse]:
-    return service.list_teams()
+    return service.list_teams(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(

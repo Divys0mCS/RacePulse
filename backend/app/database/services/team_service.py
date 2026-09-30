@@ -31,8 +31,15 @@ class TeamService:
     def get_team(self, team_id: int) -> TeamModel | None:
         return self.repository.get_by_id(team_id)
 
-    def list_teams(self) -> list[TeamModel]:
-        return self.repository.list_all()
+    def list_teams(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[TeamModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_team(self, team_id: int) -> bool:
         team = self.repository.get_by_id(team_id)

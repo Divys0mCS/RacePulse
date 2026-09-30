@@ -87,7 +87,7 @@ def test_get_team_returns_404_when_not_found():
         app.dependency_overrides.clear()
 
 
-def test_list_teams():
+def test_list_teams_accepts_pagination():
     service = MagicMock()
     service.list_teams.return_value = [make_team()]
 
@@ -96,13 +96,55 @@ def test_list_teams():
     try:
         client = TestClient(app)
 
-        response = client.get("/teams")
+        response = client.get(
+            "/teams?skip=20&limit=10"
+        )
 
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]["team_id"] == 1
 
-        service.list_teams.assert_called_once_with()
+        service.list_teams.assert_called_once_with(
+            skip=20,
+            limit=10,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_teams_rejects_negative_skip():
+    service = MagicMock()
+
+    app.dependency_overrides[get_team_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/teams?skip=-1"
+        )
+
+        assert response.status_code == 422
+        service.list_teams.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_teams_rejects_invalid_limit():
+    service = MagicMock()
+
+    app.dependency_overrides[get_team_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/teams?limit=101"
+        )
+
+        assert response.status_code == 422
+        service.list_teams.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()

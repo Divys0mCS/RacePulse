@@ -16,8 +16,17 @@ class TeamRepository:
     def get_by_id(self, team_id: int) -> TeamModel | None:
         return self.db.get(TeamModel, team_id)
 
-    def list_all(self) -> list[TeamModel]:
-        statement = select(TeamModel).order_by(TeamModel.team_id)
+    def list_all(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[TeamModel]:
+        statement = (
+            select(TeamModel)
+            .order_by(TeamModel.team_id)
+            .offset(skip)
+            .limit(limit)
+        )
         return list(self.db.scalars(statement).all())
 
     def delete(self, team: TeamModel) -> None:

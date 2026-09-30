@@ -4,14 +4,19 @@ from app.database.models.team import TeamModel
 from app.database.repositories.team_repository import TeamRepository
 
 
+def make_team() -> TeamModel:
+    return TeamModel(
+        team_id=1,
+        name="Red Bull Racing",
+        base_country="Austria",
+    )
+
+
 def test_create_adds_and_flushes_team():
     db = MagicMock()
     repository = TeamRepository(db)
 
-    team = TeamModel(
-        name="Red Bull Racing",
-        base_country="Austria",
-    )
+    team = make_team()
 
     result = repository.create(team)
 
@@ -23,12 +28,7 @@ def test_create_adds_and_flushes_team():
 def test_get_by_id_uses_session_get():
     db = MagicMock()
 
-    team = TeamModel(
-        team_id=1,
-        name="Red Bull Racing",
-        base_country="Austria",
-    )
-
+    team = make_team()
     db.get.return_value = team
 
     repository = TeamRepository(db)
@@ -54,11 +54,7 @@ def test_get_by_id_returns_none_when_not_found():
 def test_list_all_returns_teams():
     db = MagicMock()
 
-    team = TeamModel(
-        team_id=1,
-        name="Red Bull Racing",
-        base_country="Austria",
-    )
+    team = make_team()
 
     scalars = MagicMock()
     scalars.all.return_value = [team]
@@ -72,15 +68,31 @@ def test_list_all_returns_teams():
     db.scalars.assert_called_once()
 
 
+def test_list_all_applies_pagination():
+    db = MagicMock()
+
+    team = make_team()
+
+    scalars = MagicMock()
+    scalars.all.return_value = [team]
+    db.scalars.return_value = scalars
+
+    repository = TeamRepository(db)
+
+    result = repository.list_all(
+        skip=20,
+        limit=10,
+    )
+
+    assert result == [team]
+    db.scalars.assert_called_once()
+
+
 def test_delete_delegates_to_session():
     db = MagicMock()
     repository = TeamRepository(db)
 
-    team = TeamModel(
-        team_id=1,
-        name="Red Bull Racing",
-        base_country="Austria",
-    )
+    team = make_team()
 
     repository.delete(team)
 

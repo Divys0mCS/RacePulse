@@ -76,18 +76,27 @@ def test_get_team_returns_none_when_not_found():
     service.repository.get_by_id.assert_called_once_with(999)
 
 
-def test_list_teams_delegates_to_repository():
+def test_list_teams_delegates_pagination_to_repository():
     db = MagicMock()
     service = TeamService(db)
 
     teams = [make_team()]
-    service.repository.list_all = MagicMock(return_value=teams)
 
-    result = service.list_teams()
+    service.repository.list_all = MagicMock(
+        return_value=teams
+    )
+
+    result = service.list_teams(
+        skip=20,
+        limit=10,
+    )
 
     assert result == teams
-    service.repository.list_all.assert_called_once_with()
 
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )
 
 def test_delete_team_commits_when_team_exists():
     db = MagicMock()
