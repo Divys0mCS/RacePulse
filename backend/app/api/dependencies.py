@@ -7,7 +7,7 @@ from app.database.services.track_service import TrackService
 from app.database.services.driver_service import DriverService
 from app.database.services.team_service import TeamService
 from app.database.services.session_service import SessionService
-
+from app.database.services.lap_service import LapService
 
 
 def get_track_service(
@@ -35,3 +35,8 @@ def get_session_service(
     db: Session = Depends(get_db),
 ) -> SessionService:
     return SessionService(db)
+
+def get_lap_service(
+    db: Session = Depends(get_db),
+) -> LapService:
+    return LapService(db)

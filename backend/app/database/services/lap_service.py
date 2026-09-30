@@ -6,7 +6,8 @@ from app.database.repositories.lap_repository import LapRepository
 from app.database.repositories.session_repository import SessionRepository
 from app.database.repositories.team_repository import TeamRepository
 
-
+class LapAlreadyExistsError(ValueError):
+    """Raised when a lap already exists for a session, driver, and lap number."""
 class LapService:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -48,9 +49,9 @@ class LapService:
         )
 
         if existing_lap is not None:
-            raise ValueError(
-                "Lap already exists for this session, driver, and lap number"
-            )
+            raise LapAlreadyExistsError(
+        "Lap already exists for this session, driver, and lap number"
+        )
 
         lap = LapModel(
             session_id=session_id,

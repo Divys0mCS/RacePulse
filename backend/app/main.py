@@ -10,7 +10,7 @@ from app.api.routes.analysis import router as analysis_router
 from app.api.routes.drivers import router as drivers_router
 from app.api.routes.teams import router as teams_router
 from app.api.routes.sessions import router as sessions_router
-
+from app.api.routes.laps import router as laps_router
 app = FastAPI(
     title="RacePulse API",
     version="0.1.0",
@@ -39,3 +39,4 @@ app.include_router(races_router)
 app.include_router(drivers_router)
 app.include_router(teams_router)
 app.include_router(sessions_router)
+app.include_router(laps_router)
