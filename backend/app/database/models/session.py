@@ -1,10 +1,12 @@
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.database.base import Base
 from app.database.models.race import RaceModel
 
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from app.database.models.lap import LapModel
 class SessionModel(Base):
     __tablename__ = "sessions"
 
@@ -47,4 +49,7 @@ class SessionModel(Base):
             "session_type",
             name="uq_sessions_race_session_type",
         ),
+    )
+    laps: Mapped[list["LapModel"]] = relationship(
+        back_populates="session",
     )

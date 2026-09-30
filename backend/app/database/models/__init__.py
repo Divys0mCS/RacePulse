@@ -3,6 +3,7 @@ from app.database.models.race import RaceModel
 from app.database.models.session import SessionModel
 from app.database.models.team import TeamModel
 from app.database.models.track import TrackModel
+from app.database.models.lap import LapModel
 
 __all__ = [
     "TrackModel",
@@ -10,4 +11,5 @@ __all__ = [
     "DriverModel",
     "TeamModel",
     "SessionModel",
+    "LapModel",
 ]

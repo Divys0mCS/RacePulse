@@ -1,8 +1,10 @@
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from app.database.models.lap import LapModel
 
 class TeamModel(Base):
     __tablename__ = "teams"
@@ -20,4 +22,8 @@ class TeamModel(Base):
     base_country: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
+    )
+    
+    laps: Mapped[list["LapModel"]] = relationship(
+        back_populates="team",
     )
