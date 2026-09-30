@@ -46,8 +46,15 @@ class RaceService:
     def get_race(self, race_id: int) -> RaceModel | None:
         return self.repository.get_by_id(race_id)
 
-    def list_races(self) -> list[RaceModel]:
-        return self.repository.list_all()
+    def list_races(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[RaceModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_race(self, race_id: int) -> bool:
         race = self.repository.get_by_id(race_id)

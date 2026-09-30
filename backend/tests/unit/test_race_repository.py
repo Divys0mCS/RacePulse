@@ -5,17 +5,22 @@ from app.database.models.race import RaceModel
 from app.database.repositories.race_repository import RaceRepository
 
 
-def test_create_adds_and_flushes_race():
-    db = MagicMock()
-    repository = RaceRepository(db)
-
-    race = RaceModel(
+def make_race() -> RaceModel:
+    return RaceModel(
+        race_id=1,
         name="British Grand Prix",
         season=2026,
         round_number=12,
         track_id=1,
         race_date=date(2026, 7, 5),
     )
+
+
+def test_create_adds_and_flushes_race():
+    db = MagicMock()
+    repository = RaceRepository(db)
+
+    race = make_race()
 
     result = repository.create(race)
 
@@ -26,16 +31,7 @@ def test_create_adds_and_flushes_race():
 
 def test_get_by_id_uses_session_get():
     db = MagicMock()
-
-    race = RaceModel(
-        race_id=1,
-        name="British Grand Prix",
-        season=2026,
-        round_number=12,
-        track_id=1,
-        race_date=date(2026, 7, 5),
-    )
-
+    race = make_race()
     db.get.return_value = race
 
     repository = RaceRepository(db)
@@ -61,14 +57,7 @@ def test_get_by_id_returns_none_when_not_found():
 def test_list_all_returns_races():
     db = MagicMock()
 
-    race = RaceModel(
-        race_id=1,
-        name="British Grand Prix",
-        season=2026,
-        round_number=12,
-        track_id=1,
-        race_date=date(2026, 7, 5),
-    )
+    race = make_race()
 
     scalars = MagicMock()
     scalars.all.return_value = [race]
@@ -82,18 +71,31 @@ def test_list_all_returns_races():
     db.scalars.assert_called_once()
 
 
+def test_list_all_applies_pagination():
+    db = MagicMock()
+
+    race = make_race()
+
+    scalars = MagicMock()
+    scalars.all.return_value = [race]
+    db.scalars.return_value = scalars
+
+    repository = RaceRepository(db)
+
+    result = repository.list_all(
+        skip=20,
+        limit=10,
+    )
+
+    assert result == [race]
+    db.scalars.assert_called_once()
+
+
 def test_delete_delegates_to_session():
     db = MagicMock()
     repository = RaceRepository(db)
 
-    race = RaceModel(
-        race_id=1,
-        name="British Grand Prix",
-        season=2026,
-        round_number=12,
-        track_id=1,
-        race_date=date(2026, 7, 5),
-    )
+    race = make_race()
 
     repository.delete(race)
 

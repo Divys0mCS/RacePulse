@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_race_service
 from app.database.services.race_service import RaceService
@@ -40,9 +40,14 @@ def create_race(
     response_model=list[RaceResponse],
 )
 def list_races(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: RaceService = Depends(get_race_service),
 ) -> list[RaceResponse]:
-    return service.list_races()
+    return service.list_races(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(
