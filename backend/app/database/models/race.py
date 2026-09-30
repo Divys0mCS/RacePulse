@@ -8,42 +8,24 @@ from app.database.models.track import TrackModel
 
 
 class RaceModel(Base):
-    """SQLAlchemy model for the races table."""
-
     __tablename__ = "races"
 
-    race_id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
-    )
-
-    name: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
-
-    season: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-    )
-
-    round_number: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-    )
-
+    race_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    season: Mapped[int] = mapped_column(Integer, nullable=False)
+    round_number: Mapped[int] = mapped_column(Integer, nullable=False)
     track_id: Mapped[int] = mapped_column(
         ForeignKey("tracks.track_id"),
         nullable=False,
     )
-
-    race_date: Mapped[date] = mapped_column(
-        Date,
-        nullable=False,
-    )
+    race_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     track: Mapped[TrackModel] = relationship(
         back_populates="races",
+    )
+
+    sessions: Mapped[list["SessionModel"]] = relationship(
+        back_populates="race",
     )
 
     __table_args__ = (
