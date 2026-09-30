@@ -1,5 +1,5 @@
 from sqlalchemy import CheckConstraint, Integer, String, Float
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
@@ -32,6 +32,10 @@ class TrackModel(Base):
     number_of_corners: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
+    )
+
+    races: Mapped[list["RaceModel"]] = relationship(
+        back_populates="track",
     )
 
     __table_args__ = (
