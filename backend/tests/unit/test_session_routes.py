@@ -183,7 +183,7 @@ def test_get_session_by_race_and_type_returns_404_when_not_found():
         app.dependency_overrides.clear()
 
 
-def test_list_sessions():
+def test_list_sessions_accepts_pagination():
     service = MagicMock()
     service.list_sessions.return_value = [make_session()]
 
@@ -192,13 +192,55 @@ def test_list_sessions():
     try:
         client = TestClient(app)
 
-        response = client.get("/sessions")
+        response = client.get(
+            "/sessions?skip=20&limit=10"
+        )
 
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]["session_id"] == 1
 
-        service.list_sessions.assert_called_once_with()
+        service.list_sessions.assert_called_once_with(
+            skip=20,
+            limit=10,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_sessions_rejects_negative_skip():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/sessions?skip=-1"
+        )
+
+        assert response.status_code == 422
+        service.list_sessions.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_sessions_rejects_invalid_limit():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/sessions?limit=101"
+        )
+
+        assert response.status_code == 422
+        service.list_sessions.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()

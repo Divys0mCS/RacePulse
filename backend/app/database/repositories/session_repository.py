@@ -27,8 +27,17 @@ class SessionRepository:
         )
         return self.db.scalar(statement)
 
-    def list_all(self) -> list[SessionModel]:
-        statement = select(SessionModel).order_by(SessionModel.session_id)
+    def list_all(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[SessionModel]:
+        statement = (
+            select(SessionModel)
+            .order_by(SessionModel.session_id)
+            .offset(skip)
+            .limit(limit)
+        )
         return list(self.db.scalars(statement).all())
 
     def delete(self, session: SessionModel) -> None:

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_session_service
 from app.database.services.session_service import SessionService
@@ -37,9 +37,14 @@ def create_session(
     response_model=list[SessionResponse],
 )
 def list_sessions(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: SessionService = Depends(get_session_service),
 ) -> list[SessionResponse]:
-    return service.list_sessions()
+    return service.list_sessions(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(

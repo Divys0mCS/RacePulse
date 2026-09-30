@@ -48,8 +48,15 @@ class SessionService:
             session_type,
         )
 
-    def list_sessions(self) -> list[SessionModel]:
-        return self.repository.list_all()
+    def list_sessions(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[SessionModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_session(self, session_id: int) -> bool:
         session = self.repository.get_by_id(session_id)

@@ -157,20 +157,27 @@ def test_get_session_by_race_and_type_returns_none_when_not_found():
     assert result is None
 
 
-def test_list_sessions_delegates_to_repository():
+def test_list_sessions_delegates_pagination_to_repository():
     db = MagicMock()
     service = SessionService(db)
 
     sessions = [make_session()]
+
     service.repository.list_all = MagicMock(
         return_value=sessions
     )
 
-    result = service.list_sessions()
+    result = service.list_sessions(
+        skip=20,
+        limit=10,
+    )
 
     assert result == sessions
-    service.repository.list_all.assert_called_once_with()
 
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )
 
 def test_delete_session_commits_when_session_exists():
     db = MagicMock()
