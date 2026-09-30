@@ -203,3 +203,25 @@ def test_delete_race_rolls_back_when_repository_fails():
         service.delete_race(1)
 
     db.rollback.assert_called_once_with()
+    
+def test_list_races_delegates_pagination_to_repository():
+    db = MagicMock()
+    service = RaceService(db)
+
+    races = [make_race()]
+
+    service.repository.list_all = MagicMock(
+        return_value=races
+    )
+
+    result = service.list_races(
+        skip=20,
+        limit=10,
+    )
+
+    assert result == races
+
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )

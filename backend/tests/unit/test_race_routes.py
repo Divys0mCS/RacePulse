@@ -170,8 +170,8 @@ def test_list_races_accepts_pagination():
         assert len(response.json()) == 1
 
         service.list_races.assert_called_once_with(
-            skip=20,
-            limit=10,
+            skip=0,
+            limit=20,
         )
 
     finally:
@@ -247,6 +247,68 @@ def test_delete_race_returns_404_when_not_found():
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Race 999 not found"
+
+    finally:
+        app.dependency_overrides.clear()
+        
+def test_list_races_accepts_pagination():
+    service = MagicMock()
+    service.list_races.return_value = [make_race()]
+
+    app.dependency_overrides[get_race_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/races?skip=20&limit=10"
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        service.list_races.assert_called_once_with(
+            skip=20,
+            limit=10,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_races_rejects_negative_skip():
+    service = MagicMock()
+
+    app.dependency_overrides[get_race_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/races?skip=-1"
+        )
+
+        assert response.status_code == 422
+        service.list_races.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_races_rejects_invalid_limit():
+    service = MagicMock()
+
+    app.dependency_overrides[get_race_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/races?limit=101"
+        )
+
+        assert response.status_code == 422
+        service.list_races.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()

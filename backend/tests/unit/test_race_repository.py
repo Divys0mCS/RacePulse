@@ -100,3 +100,22 @@ def test_delete_delegates_to_session():
     repository.delete(race)
 
     db.delete.assert_called_once_with(race)
+    
+def test_list_all_applies_pagination():
+    db = MagicMock()
+
+    race = make_race()
+
+    scalars = MagicMock()
+    scalars.all.return_value = [race]
+    db.scalars.return_value = scalars
+
+    repository = RaceRepository(db)
+
+    result = repository.list_all(
+        skip=20,
+        limit=10,
+    )
+
+    assert result == [race]
+    db.scalars.assert_called_once()

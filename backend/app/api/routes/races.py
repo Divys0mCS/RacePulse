@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.api.dependencies import get_race_service
 from app.database.services.race_service import RaceService
 from app.schemas.race import RaceCreate, RaceResponse
-
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 router = APIRouter(
     prefix="/races",
@@ -84,3 +84,17 @@ def delete_race(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Race {race_id} not found",
         )
+        
+@router.get(
+    "",
+    response_model=list[RaceResponse],
+)
+def list_races(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
+    service: RaceService = Depends(get_race_service),
+) -> list[RaceResponse]:
+    return service.list_races(
+        skip=skip,
+        limit=limit,
+    )
