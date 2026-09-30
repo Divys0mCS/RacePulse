@@ -7,7 +7,7 @@ from app.api.error_handlers import (
     generic_exception_handler,
 )
 from app.api.routes.analysis import router as analysis_router
-
+from app.api.routes.drivers import router as drivers_router
 
 app = FastAPI(
     title="RacePulse API",
@@ -34,3 +34,4 @@ def health_check() -> dict[str, str]:
 app.include_router(analysis_router)
 app.include_router(tracks_router)
 app.include_router(races_router)
+app.include_router(drivers_router)
