@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.routes.tracks import router as tracks_router
+from app.api.routes.races import router as races_router
 
 from app.api.error_handlers import (
     file_not_found_handler,
@@ -32,3 +33,4 @@ def health_check() -> dict[str, str]:
 
 app.include_router(analysis_router)
 app.include_router(tracks_router)
+app.include_router(races_router)
