@@ -6,6 +6,8 @@ from app.database.services.race_service import RaceService
 from app.database.services.track_service import TrackService
 from app.database.services.driver_service import DriverService
 from app.database.services.team_service import TeamService
+from app.database.services.session_service import SessionService
+
 
 
 def get_track_service(
@@ -28,3 +30,8 @@ def get_team_service(
     db: Session = Depends(get_db),
 ) -> TeamService:
     return TeamService(db)
+
+def get_session_service(
+    db: Session = Depends(get_db),
+) -> SessionService:
+    return SessionService(db)
