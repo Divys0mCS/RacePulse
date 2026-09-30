@@ -6,8 +6,11 @@ from app.database.repositories.lap_repository import LapRepository
 from app.database.repositories.session_repository import SessionRepository
 from app.database.repositories.team_repository import TeamRepository
 
+
 class LapAlreadyExistsError(ValueError):
     """Raised when a lap already exists for a session, driver, and lap number."""
+
+
 class LapService:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -50,8 +53,8 @@ class LapService:
 
         if existing_lap is not None:
             raise LapAlreadyExistsError(
-        "Lap already exists for this session, driver, and lap number"
-        )
+                "Lap already exists for this session, driver, and lap number"
+            )
 
         lap = LapModel(
             session_id=session_id,
@@ -88,11 +91,27 @@ class LapService:
             lap_number,
         )
 
-    def list_laps_by_session(self, session_id: int) -> list[LapModel]:
-        return self.repository.list_by_session(session_id)
+    def list_laps_by_session(
+        self,
+        session_id: int,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[LapModel]:
+        return self.repository.list_by_session(
+            session_id,
+            skip=skip,
+            limit=limit,
+        )
 
-    def list_laps(self) -> list[LapModel]:
-        return self.repository.list_all()
+    def list_laps(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[LapModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_lap(self, lap_id: int) -> bool:
         lap = self.repository.get_by_id(lap_id)

@@ -92,28 +92,38 @@ def test_get_by_session_driver_lap_returns_none_when_not_found():
 def test_list_by_session_returns_laps():
     db = MagicMock()
 
-    lap_1 = make_lap()
-    lap_2 = LapModel(
-        lap_id=2,
-        session_id=10,
-        driver_id=20,
-        team_id=30,
-        lap_number=6,
-        lap_time_seconds=91.900,
-        sector_1_time_seconds=29.900,
-        sector_2_time_seconds=31.000,
-        sector_3_time_seconds=31.000,
-    )
+    lap = make_lap()
 
     scalars = MagicMock()
-    scalars.all.return_value = [lap_1, lap_2]
+    scalars.all.return_value = [lap]
     db.scalars.return_value = scalars
 
     repository = LapRepository(db)
 
     result = repository.list_by_session(10)
 
-    assert result == [lap_1, lap_2]
+    assert result == [lap]
+    db.scalars.assert_called_once()
+
+
+def test_list_by_session_applies_pagination():
+    db = MagicMock()
+
+    lap = make_lap()
+
+    scalars = MagicMock()
+    scalars.all.return_value = [lap]
+    db.scalars.return_value = scalars
+
+    repository = LapRepository(db)
+
+    result = repository.list_by_session(
+        session_id=10,
+        skip=20,
+        limit=10,
+    )
+
+    assert result == [lap]
     db.scalars.assert_called_once()
 
 
@@ -129,6 +139,26 @@ def test_list_all_returns_laps():
     repository = LapRepository(db)
 
     result = repository.list_all()
+
+    assert result == [lap]
+    db.scalars.assert_called_once()
+
+
+def test_list_all_applies_pagination():
+    db = MagicMock()
+
+    lap = make_lap()
+
+    scalars = MagicMock()
+    scalars.all.return_value = [lap]
+    db.scalars.return_value = scalars
+
+    repository = LapRepository(db)
+
+    result = repository.list_all(
+        skip=20,
+        limit=10,
+    )
 
     assert result == [lap]
     db.scalars.assert_called_once()

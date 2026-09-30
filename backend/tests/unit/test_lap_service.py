@@ -6,7 +6,10 @@ from app.database.models.driver import DriverModel
 from app.database.models.lap import LapModel
 from app.database.models.session import SessionModel
 from app.database.models.team import TeamModel
-from app.database.services.lap_service import LapService
+from app.database.services.lap_service import (
+    LapAlreadyExistsError,
+    LapService,
+)
 
 
 def make_session() -> SessionModel:
@@ -191,7 +194,7 @@ def test_create_lap_raises_when_duplicate_exists():
     service.repository.create = MagicMock()
 
     with pytest.raises(
-        ValueError,
+        LapAlreadyExistsError,
         match="Lap already exists for this session, driver, and lap number",
     ):
         service.create_lap(
@@ -290,10 +293,19 @@ def test_list_laps_by_session_delegates_to_repository():
         return_value=laps
     )
 
-    result = service.list_laps_by_session(1)
+    result = service.list_laps_by_session(
+        session_id=1,
+        skip=20,
+        limit=10,
+    )
 
     assert result == laps
-    service.repository.list_by_session.assert_called_once_with(1)
+
+    service.repository.list_by_session.assert_called_once_with(
+        1,
+        skip=20,
+        limit=10,
+    )
 
 
 def test_list_laps_delegates_to_repository():
@@ -305,10 +317,17 @@ def test_list_laps_delegates_to_repository():
         return_value=laps
     )
 
-    result = service.list_laps()
+    result = service.list_laps(
+        skip=20,
+        limit=10,
+    )
 
     assert result == laps
-    service.repository.list_all.assert_called_once_with()
+
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )
 
 
 def test_delete_lap_commits_when_lap_exists():
@@ -316,6 +335,7 @@ def test_delete_lap_commits_when_lap_exists():
     service = LapService(db)
 
     lap = make_lap()
+
     service.repository.get_by_id = MagicMock(return_value=lap)
     service.repository.delete = MagicMock()
 
@@ -346,6 +366,7 @@ def test_delete_lap_rolls_back_when_repository_fails():
     service = LapService(db)
 
     lap = make_lap()
+
     service.repository.get_by_id = MagicMock(return_value=lap)
     service.repository.delete = MagicMock(
         side_effect=RuntimeError("delete failed")

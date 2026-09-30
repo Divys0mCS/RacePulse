@@ -29,16 +29,32 @@ class LapRepository:
         )
         return self.db.scalar(statement)
 
-    def list_by_session(self, session_id: int) -> list[LapModel]:
+    def list_by_session(
+        self,
+        session_id: int,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[LapModel]:
         statement = (
             select(LapModel)
             .where(LapModel.session_id == session_id)
             .order_by(LapModel.lap_number)
+            .offset(skip)
+            .limit(limit)
         )
         return list(self.db.scalars(statement).all())
 
-    def list_all(self) -> list[LapModel]:
-        statement = select(LapModel).order_by(LapModel.lap_id)
+    def list_all(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[LapModel]:
+        statement = (
+            select(LapModel)
+            .order_by(LapModel.lap_id)
+            .offset(skip)
+            .limit(limit)
+        )
         return list(self.db.scalars(statement).all())
 
     def delete(self, lap: LapModel) -> None:

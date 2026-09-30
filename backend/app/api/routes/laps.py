@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_lap_service
 from app.database.services.lap_service import (
@@ -51,9 +51,14 @@ def create_lap(
     response_model=list[LapResponse],
 )
 def list_laps(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: LapService = Depends(get_lap_service),
 ) -> list[LapResponse]:
-    return service.list_laps()
+    return service.list_laps(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(
@@ -62,9 +67,15 @@ def list_laps(
 )
 def list_laps_by_session(
     session_id: int,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: LapService = Depends(get_lap_service),
 ) -> list[LapResponse]:
-    return service.list_laps_by_session(session_id)
+    return service.list_laps_by_session(
+        session_id,
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(

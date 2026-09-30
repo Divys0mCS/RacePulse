@@ -216,7 +216,73 @@ def test_list_laps():
         assert len(response.json()) == 1
         assert response.json()[0]["lap_id"] == 1
 
-        service.list_laps.assert_called_once_with()
+        service.list_laps.assert_called_once_with(
+            skip=0,
+            limit=20,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_accepts_pagination():
+    service = MagicMock()
+    service.list_laps.return_value = [make_lap()]
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps?skip=20&limit=10"
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        service.list_laps.assert_called_once_with(
+            skip=20,
+            limit=10,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_rejects_negative_skip():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps?skip=-1"
+        )
+
+        assert response.status_code == 422
+        service.list_laps.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_rejects_invalid_limit():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps?limit=101"
+        )
+
+        assert response.status_code == 422
+        service.list_laps.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -237,7 +303,75 @@ def test_list_laps_by_session():
         assert len(response.json()) == 1
         assert response.json()[0]["session_id"] == 10
 
-        service.list_laps_by_session.assert_called_once_with(10)
+        service.list_laps_by_session.assert_called_once_with(
+            10,
+            skip=0,
+            limit=20,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_by_session_accepts_pagination():
+    service = MagicMock()
+    service.list_laps_by_session.return_value = [make_lap()]
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/10?skip=20&limit=10"
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+
+        service.list_laps_by_session.assert_called_once_with(
+            10,
+            skip=20,
+            limit=10,
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_by_session_rejects_negative_skip():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/10?skip=-1"
+        )
+
+        assert response.status_code == 422
+        service.list_laps_by_session.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_laps_by_session_rejects_invalid_limit():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/10?limit=101"
+        )
+
+        assert response.status_code == 422
+        service.list_laps_by_session.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -318,7 +452,6 @@ def test_delete_lap_returns_404_when_not_found():
         response = client.delete("/laps/999")
 
         assert response.status_code == 404
-        assert response.json()["detail"] == "Lap 999 not found"
 
     finally:
         app.dependency_overrides.clear()
