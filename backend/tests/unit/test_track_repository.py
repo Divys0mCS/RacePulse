@@ -93,3 +93,25 @@ def test_delete_delegates_to_session():
     repository.delete(track)
 
     db.delete.assert_called_once_with(track)
+    
+def test_list_all_applies_pagination():
+    db = MagicMock()
+
+    track = TrackModel(
+        track_id=1,
+        name="Silverstone",
+        country="United Kingdom",
+        length_km=5.891,
+        number_of_corners=18,
+    )
+
+    scalars = MagicMock()
+    scalars.all.return_value = [track]
+    db.scalars.return_value = scalars
+
+    repository = TrackRepository(db)
+
+    result = repository.list_all(skip=20, limit=10)
+
+    assert result == [track]
+    db.scalars.assert_called_once()

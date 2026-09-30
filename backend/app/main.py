@@ -1,6 +1,4 @@
 from fastapi import FastAPI
-from app.api.routes.tracks import router as tracks_router
-from app.api.routes.races import router as races_router
 
 from app.api.error_handlers import (
     file_not_found_handler,
@@ -8,9 +6,13 @@ from app.api.error_handlers import (
 )
 from app.api.routes.analysis import router as analysis_router
 from app.api.routes.drivers import router as drivers_router
-from app.api.routes.teams import router as teams_router
-from app.api.routes.sessions import router as sessions_router
 from app.api.routes.laps import router as laps_router
+from app.api.routes.races import router as races_router
+from app.api.routes.sessions import router as sessions_router
+from app.api.routes.teams import router as teams_router
+from app.api.routes.tracks import router as tracks_router
+
+
 app = FastAPI(
     title="RacePulse API",
     version="0.1.0",

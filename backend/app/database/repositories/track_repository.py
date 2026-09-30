@@ -16,8 +16,17 @@ class TrackRepository:
     def get_by_id(self, track_id: int) -> TrackModel | None:
         return self.db.get(TrackModel, track_id)
 
-    def list_all(self) -> list[TrackModel]:
-        statement = select(TrackModel).order_by(TrackModel.track_id)
+    def list_all(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[TrackModel]:
+        statement = (
+        select(TrackModel)
+        .order_by(TrackModel.track_id)
+        .offset(skip)
+        .limit(limit)
+    )
         return list(self.db.scalars(statement).all())
 
     def delete(self, track: TrackModel) -> None:

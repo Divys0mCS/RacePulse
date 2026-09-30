@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_track_service
 from app.database.services.track_service import TrackService
@@ -33,9 +33,14 @@ def create_track(
     response_model=list[TrackResponse],
 )
 def list_tracks(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=20, ge=1, le=100),
     service: TrackService = Depends(get_track_service),
 ) -> list[TrackResponse]:
-    return service.list_tracks()
+    return service.list_tracks(
+        skip=skip,
+        limit=limit,
+    )
 
 
 @router.get(

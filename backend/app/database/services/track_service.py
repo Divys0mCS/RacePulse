@@ -35,8 +35,15 @@ class TrackService:
     def get_track(self, track_id: int) -> TrackModel | None:
         return self.repository.get_by_id(track_id)
 
-    def list_tracks(self) -> list[TrackModel]:
-        return self.repository.list_all()
+    def list_tracks(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> list[TrackModel]:
+        return self.repository.list_all(
+            skip=skip,
+            limit=limit,
+        )
 
     def delete_track(self, track_id: int) -> bool:
         track = self.repository.get_by_id(track_id)

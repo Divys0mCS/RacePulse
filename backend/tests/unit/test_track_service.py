@@ -81,7 +81,7 @@ def test_get_track_returns_none_when_not_found():
     service.repository.get_by_id.assert_called_once_with(999)
 
 
-def test_list_tracks_delegates_to_repository():
+def test_list_tracks_delegates_pagination_to_repository():
     db = MagicMock()
     service = TrackService(db)
 
@@ -95,12 +95,21 @@ def test_list_tracks_delegates_to_repository():
         )
     ]
 
-    service.repository.list_all = MagicMock(return_value=tracks)
+    service.repository.list_all = MagicMock(
+        return_value=tracks
+    )
 
-    result = service.list_tracks()
+    result = service.list_tracks(
+        skip=20,
+        limit=10,
+    )
 
     assert result == tracks
-    service.repository.list_all.assert_called_once_with()
+
+    service.repository.list_all.assert_called_once_with(
+        skip=20,
+        limit=10,
+    )
 
 
 def test_delete_track_commits_when_track_exists():
