@@ -215,3 +215,131 @@ def test_list_tracks_rejects_invalid_limit():
 
     finally:
         app.dependency_overrides.clear()
+
+def test_create_track_rejects_blank_name():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/tracks",
+            json={
+                "name": "   ",
+                "country": "United Kingdom",
+                "length_km": 5.891,
+                "number_of_corners": 18,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_track_rejects_blank_country():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/tracks",
+            json={
+                "name": "Silverstone",
+                "country": "   ",
+                "length_km": 5.891,
+                "number_of_corners": 18,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_track_rejects_name_longer_than_database_limit():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/tracks",
+            json={
+                "name": "A" * 256,
+                "country": "United Kingdom",
+                "length_km": 5.891,
+                "number_of_corners": 18,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_track_rejects_country_longer_than_database_limit():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/tracks",
+            json={
+                "name": "Silverstone",
+                "country": "A" * 101,
+                "length_km": 5.891,
+                "number_of_corners": 18,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_track_rejects_non_positive_id():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/tracks/0")
+
+        assert response.status_code == 422
+        service.get_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_delete_track_rejects_non_positive_id():
+    service = MagicMock()
+    app.dependency_overrides[get_track_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.delete("/tracks/-1")
+
+        assert response.status_code == 422
+        service.delete_track.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+

@@ -1,9 +1,16 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class DriverCreate(BaseModel):
-    name: str
-    nationality: str
+    name: str = Field(min_length=1, max_length=255)
+    nationality: str = Field(min_length=1, max_length=100)
+
+    @field_validator("name", "nationality")
+    @classmethod
+    def reject_blank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("value must not be blank")
+        return value
 
 
 class DriverResponse(BaseModel):

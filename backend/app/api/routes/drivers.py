@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_driver_service
 from app.database.services.driver_service import DriverService
@@ -46,7 +46,7 @@ def list_drivers(
     response_model=DriverResponse,
 )
 def get_driver(
-    driver_id: int,
+    driver_id: int = Path(gt=0),
     service: DriverService = Depends(get_driver_service),
 ) -> DriverResponse:
     driver = service.get_driver(driver_id)
@@ -65,7 +65,7 @@ def get_driver(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_driver(
-    driver_id: int,
+    driver_id: int = Path(gt=0),
     service: DriverService = Depends(get_driver_service),
 ) -> None:
     deleted = service.delete_driver(driver_id)

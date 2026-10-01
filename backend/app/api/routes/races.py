@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_race_service
 from app.database.services.race_service import RaceService
@@ -55,7 +55,7 @@ def list_races(
     response_model=RaceResponse,
 )
 def get_race(
-    race_id: int,
+    race_id: int = Path(gt=0),
     service: RaceService = Depends(get_race_service),
 ) -> RaceResponse:
     race = service.get_race(race_id)
@@ -74,7 +74,7 @@ def get_race(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_race(
-    race_id: int,
+    race_id: int = Path(gt=0),
     service: RaceService = Depends(get_race_service),
 ) -> None:
     deleted = service.delete_race(race_id)

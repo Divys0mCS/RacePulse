@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_lap_service
 from app.database.services.lap_service import (
@@ -66,7 +66,7 @@ def list_laps(
     response_model=list[LapResponse],
 )
 def list_laps_by_session(
-    session_id: int,
+    session_id: int = Path(gt=0),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=20, ge=1, le=100),
     service: LapService = Depends(get_lap_service),
@@ -83,9 +83,9 @@ def list_laps_by_session(
     response_model=LapResponse,
 )
 def get_lap_by_session_driver_lap(
-    session_id: int,
-    driver_id: int,
-    lap_number: int,
+    session_id: int = Path(gt=0),
+    driver_id: int = Path(gt=0),
+    lap_number: int = Path(ge=1),
     service: LapService = Depends(get_lap_service),
 ) -> LapResponse:
     lap = service.get_lap_by_session_driver_lap(
@@ -111,7 +111,7 @@ def get_lap_by_session_driver_lap(
     response_model=LapResponse,
 )
 def get_lap(
-    lap_id: int,
+    lap_id: int = Path(gt=0),
     service: LapService = Depends(get_lap_service),
 ) -> LapResponse:
     lap = service.get_lap(lap_id)
@@ -130,7 +130,7 @@ def get_lap(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_lap(
-    lap_id: int,
+    lap_id: int = Path(gt=0),
     service: LapService = Depends(get_lap_service),
 ) -> None:
     deleted = service.delete_lap(lap_id)

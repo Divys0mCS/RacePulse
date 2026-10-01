@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_session_service
 from app.database.services.session_service import SessionService
-from app.schemas.session import SessionCreate, SessionResponse
+from app.schemas.session import SessionCreate, SessionResponse, SessionType
 
 
 router = APIRouter(
@@ -52,8 +52,8 @@ def list_sessions(
     response_model=SessionResponse,
 )
 def get_session_by_race_and_type(
-    race_id: int,
-    session_type: str,
+    session_type: SessionType,
+    race_id: int = Path(gt=0),
     service: SessionService = Depends(get_session_service),
 ) -> SessionResponse:
     session = service.get_session_by_race_and_type(
@@ -78,7 +78,7 @@ def get_session_by_race_and_type(
     response_model=SessionResponse,
 )
 def get_session(
-    session_id: int,
+    session_id: int = Path(gt=0),
     service: SessionService = Depends(get_session_service),
 ) -> SessionResponse:
     session = service.get_session(session_id)
@@ -97,7 +97,7 @@ def get_session(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_session(
-    session_id: int,
+    session_id: int = Path(gt=0),
     service: SessionService = Depends(get_session_service),
 ) -> None:
     deleted = service.delete_session(session_id)

@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
+import math
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class LapCreate(BaseModel):
@@ -10,6 +12,18 @@ class LapCreate(BaseModel):
     sector_1_time_seconds: float = Field(gt=0)
     sector_2_time_seconds: float = Field(gt=0)
     sector_3_time_seconds: float = Field(gt=0)
+
+    @field_validator(
+        "lap_time_seconds",
+        "sector_1_time_seconds",
+        "sector_2_time_seconds",
+        "sector_3_time_seconds",
+    )
+    @classmethod
+    def reject_non_finite_values(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("value must be finite")
+        return value
 
 
 class LapResponse(BaseModel):

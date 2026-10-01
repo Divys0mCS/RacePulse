@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_track_service
 from app.database.services.track_service import TrackService
@@ -48,7 +48,7 @@ def list_tracks(
     response_model=TrackResponse,
 )
 def get_track(
-    track_id: int,
+    track_id: int = Path(gt=0),
     service: TrackService = Depends(get_track_service),
 ) -> TrackResponse:
     track = service.get_track(track_id)
@@ -67,7 +67,7 @@ def get_track(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_track(
-    track_id: int,
+    track_id: int = Path(gt=0),
     service: TrackService = Depends(get_track_service),
 ) -> None:
     deleted = service.delete_track(track_id)

@@ -74,6 +74,29 @@ def test_create_session_returns_404_when_race_does_not_exist():
         app.dependency_overrides.clear()
 
 
+def test_create_session_rejects_non_positive_race_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/sessions",
+            json={
+                "race_id": 0,
+                "session_type": "RACE",
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_session.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_create_session_rejects_invalid_session_type():
     service = MagicMock()
 
@@ -136,6 +159,23 @@ def test_get_session_returns_404_when_not_found():
         app.dependency_overrides.clear()
 
 
+def test_get_session_rejects_non_positive_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/sessions/0")
+
+        assert response.status_code == 422
+        service.get_session.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_get_session_by_race_and_type():
     service = MagicMock()
     service.get_session_by_race_and_type.return_value = make_session()
@@ -177,6 +217,68 @@ def test_get_session_by_race_and_type_returns_404_when_not_found():
         assert response.status_code == 404
         assert response.json()["detail"] == (
             "Session RACE for race 10 not found"
+        )
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_session_by_race_and_type_rejects_non_positive_race_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/sessions/race/0/RACE"
+        )
+
+        assert response.status_code == 422
+        service.get_session_by_race_and_type.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_session_by_race_and_type_rejects_invalid_session_type():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/sessions/race/10/INVALID"
+        )
+
+        assert response.status_code == 422
+        service.get_session_by_race_and_type.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_list_sessions():
+    service = MagicMock()
+    service.list_sessions.return_value = [make_session()]
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/sessions")
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["session_id"] == 1
+
+        service.list_sessions.assert_called_once_with(
+            skip=0,
+            limit=20,
         )
 
     finally:
@@ -277,6 +379,23 @@ def test_delete_session_returns_404_when_not_found():
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Session 999 not found"
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_delete_session_rejects_non_positive_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.delete("/sessions/0")
+
+        assert response.status_code == 422
+        service.delete_session.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()

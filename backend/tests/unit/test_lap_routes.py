@@ -133,6 +133,122 @@ def test_create_lap_returns_409_when_duplicate_exists():
         app.dependency_overrides.clear()
 
 
+def test_create_lap_rejects_non_positive_session_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 0,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_non_positive_driver_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 0,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_non_positive_team_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 0,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_non_positive_lap_number():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 0,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_create_lap_rejects_invalid_lap_time():
     service = MagicMock()
 
@@ -150,6 +266,180 @@ def test_create_lap_rejects_invalid_lap_time():
                 "lap_number": 5,
                 "lap_time_seconds": 0,
                 "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_invalid_sector_1_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 0,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_invalid_sector_2_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 0,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_invalid_sector_3_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 0,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_nan_lap_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": "NaN",
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_infinite_lap_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": "Infinity",
+                "sector_1_time_seconds": 30.120,
+                "sector_2_time_seconds": 31.210,
+                "sector_3_time_seconds": 31.015,
+            },
+        )
+
+        assert response.status_code == 422
+        service.create_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_lap_rejects_nan_sector_time():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.post(
+            "/laps",
+            json={
+                "session_id": 10,
+                "driver_id": 20,
+                "team_id": 30,
+                "lap_number": 5,
+                "lap_time_seconds": 92.345,
+                "sector_1_time_seconds": "NaN",
                 "sector_2_time_seconds": 31.210,
                 "sector_3_time_seconds": 31.015,
             },
@@ -196,6 +486,23 @@ def test_get_lap_returns_404_when_not_found():
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Lap 999 not found"
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_lap_rejects_non_positive_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/laps/0")
+
+        assert response.status_code == 422
+        service.get_lap.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -339,6 +646,23 @@ def test_list_laps_by_session_accepts_pagination():
         app.dependency_overrides.clear()
 
 
+def test_list_laps_by_session_rejects_non_positive_session_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/laps/session/0")
+
+        assert response.status_code == 422
+        service.list_laps_by_session.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_list_laps_by_session_rejects_negative_skip():
     service = MagicMock()
 
@@ -422,6 +746,63 @@ def test_get_lap_by_session_driver_lap_returns_404():
         app.dependency_overrides.clear()
 
 
+def test_get_lap_by_session_driver_lap_rejects_non_positive_session_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/0/driver/20/lap/5"
+        )
+
+        assert response.status_code == 422
+        service.get_lap_by_session_driver_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_lap_by_session_driver_lap_rejects_non_positive_driver_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/10/driver/0/lap/5"
+        )
+
+        assert response.status_code == 422
+        service.get_lap_by_session_driver_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_get_lap_by_session_driver_lap_rejects_invalid_lap_number():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get(
+            "/laps/session/10/driver/20/lap/0"
+        )
+
+        assert response.status_code == 422
+        service.get_lap_by_session_driver_lap.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_delete_lap():
     service = MagicMock()
     service.delete_lap.return_value = True
@@ -452,6 +833,23 @@ def test_delete_lap_returns_404_when_not_found():
         response = client.delete("/laps/999")
 
         assert response.status_code == 404
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_delete_lap_rejects_non_positive_id():
+    service = MagicMock()
+
+    app.dependency_overrides[get_lap_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.delete("/laps/0")
+
+        assert response.status_code == 422
+        service.delete_lap.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()

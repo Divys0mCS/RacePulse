@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_team_service
 from app.database.services.team_service import TeamService
@@ -46,7 +46,7 @@ def list_teams(
     response_model=TeamResponse,
 )
 def get_team(
-    team_id: int,
+    team_id: int = Path(gt=0),
     service: TeamService = Depends(get_team_service),
 ) -> TeamResponse:
     team = service.get_team(team_id)
@@ -65,7 +65,7 @@ def get_team(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_team(
-    team_id: int,
+    team_id: int = Path(gt=0),
     service: TeamService = Depends(get_team_service),
 ) -> None:
     deleted = service.delete_team(team_id)
