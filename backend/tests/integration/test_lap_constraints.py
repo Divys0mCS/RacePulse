@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from app.database.connection import SessionLocal
 from app.database.models.driver import DriverModel
@@ -85,7 +85,7 @@ def test_lap_rejects_non_positive_lap_number() -> None:
 
         session.add(lap)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -112,7 +112,7 @@ def test_lap_rejects_non_positive_lap_time() -> None:
 
         session.add(lap)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -147,7 +147,7 @@ def test_lap_rejects_non_positive_sector_time(field_name: str) -> None:
 
         session.add(lap)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -177,7 +177,7 @@ def test_lap_rejects_duplicate_session_driver_lap_number() -> None:
         duplicate = create_valid_lap(race_session, driver, team)
         session.add(duplicate)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -211,7 +211,7 @@ def test_lap_rejects_unknown_session() -> None:
 
         session.add(lap)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()

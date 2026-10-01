@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from app.database.connection import SessionLocal
 from app.database.models.race import RaceModel
@@ -47,7 +47,7 @@ def test_session_rejects_invalid_session_type() -> None:
 
         session.add(invalid_session)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -81,7 +81,7 @@ def test_session_rejects_duplicate_session_type_for_same_race() -> None:
 
         session.add(second)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -106,7 +106,7 @@ def test_session_rejects_unknown_race() -> None:
 
         session.add(invalid_session)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()

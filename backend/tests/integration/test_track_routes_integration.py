@@ -34,7 +34,7 @@ def test_track_routes_work_end_to_end():
     assert get_response.json()["track_id"] == track_id
     assert get_response.json()["name"] == "Track API Integration Test"
 
-    list_response = client.get("/tracks")
+    list_response = client.get("/tracks?limit=100")
 
     assert list_response.status_code == 200
     assert any(

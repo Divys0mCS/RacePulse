@@ -33,7 +33,7 @@ def test_track_repository_persists_track():
         assert fetched_track.number_of_corners == 10
 
         # LIST ALL
-        tracks = repository.list_all()
+        tracks = repository.list_all(limit=100)
 
         assert any(
             existing.track_id == created_track.track_id

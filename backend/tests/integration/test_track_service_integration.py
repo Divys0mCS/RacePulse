@@ -22,7 +22,7 @@ def test_track_service_creates_reads_lists_and_deletes_track():
         assert fetched_track is not None
         assert fetched_track.name == "Track Service Integration Test"
 
-        tracks = service.list_tracks()
+        tracks = service.list_tracks(limit=100)
 
         assert any(
             track.track_id == created_track.track_id

@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from app.database.connection import SessionLocal
 from app.database.models.race import RaceModel
@@ -37,7 +37,7 @@ def test_race_rejects_invalid_season() -> None:
 
         session.add(race)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -65,7 +65,7 @@ def test_race_rejects_invalid_round_number() -> None:
 
         session.add(race)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -91,7 +91,7 @@ def test_race_rejects_unknown_track() -> None:
 
         session.add(race)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()

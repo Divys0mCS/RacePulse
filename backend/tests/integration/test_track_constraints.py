@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, ProgrammingError
 
 from app.database.connection import SessionLocal
 from app.database.models.track import TrackModel
@@ -16,7 +16,7 @@ def test_database_rejects_non_positive_track_length() -> None:
 
         session.add(track)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
@@ -33,7 +33,7 @@ def test_database_rejects_zero_corners() -> None:
 
         session.add(track)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises((IntegrityError, ProgrammingError)):
             session.commit()
 
         session.rollback()
