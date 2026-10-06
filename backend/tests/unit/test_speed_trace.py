@@ -10,6 +10,7 @@ from app.models.driver import Driver
 from app.models.team import Team
 
 
+
 def make_lap():
     track = Track(track_id=1, name="Silverstone", country="United Kingdom", length_km=5.891, number_of_corners=18)
     race = Race(race_id=1, name="British Grand Prix", season=2024, round_number=10, track=track, race_date=date(2024, 7, 7))
@@ -59,3 +60,15 @@ def test_build_speed_trace_title_includes_driver_and_lap():
 
     assert "Max Verstappen" in fig.layout.title.text
     assert "Lap 2" in fig.layout.title.text
+    
+def test_build_speed_trace_cleans_duplicate_samples():
+    telemetry = Telemetry(telemetry_id=1, lap=make_lap())
+
+    telemetry.add_sample(make_sample(500, 265))
+    telemetry.add_sample(make_sample(0, 120))
+    telemetry.add_sample(make_sample(500, 265))
+
+    fig = build_speed_trace(telemetry)
+
+    assert list(fig.data[0].x) == [0, 500]
+    assert list(fig.data[0].y) == [120, 265]

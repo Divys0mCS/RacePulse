@@ -11,14 +11,15 @@ distance axis.
 
 import plotly.graph_objects as go
 from app.models.telemetry import Telemetry
-
+from analytics.processing.cleaner import TelemetryCleaner
 
 def build_speed_trace(telemetry: Telemetry) -> go.Figure:
     """Return a Plotly Figure plotting speed (kph) against distance (m) for one lap."""
     if not telemetry.samples:
         raise ValueError("Cannot build a speed trace for a Telemetry with no samples")
 
-    samples = sorted(telemetry.samples, key=lambda s: s.distance_m)
+    samples = TelemetryCleaner().clean(telemetry.samples)
+
     distances = [s.distance_m for s in samples]
     speeds = [s.speed_kph for s in samples]
 
