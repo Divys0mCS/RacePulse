@@ -1,3 +1,4 @@
+import pytest
 from app.models.telemetry import TelemetrySample
 from analytics.processing.transformer import TelemetryTransformer
 
@@ -84,7 +85,44 @@ def test_transformer_rejects_non_positive_track_length():
                 samples,
                 track_length_km=invalid_length,
             )
+            
         except ValueError:
             pass
         else:
             raise AssertionError("Expected ValueError for invalid track length")
+
+def test_transform_rejects_sample_beyond_track_length():
+    """Reject telemetry samples beyond the configured track length."""
+    transformer = TelemetryTransformer()
+    samples = [
+        TelemetrySample(
+            distance_m=5100,
+            speed_kph=250,
+            throttle_pct=100,
+            brake_pct=0,
+            gear=5,
+            rpm=10000,
+        )
+    ]
+
+    with pytest.raises(ValueError, match="exceeds track length"):
+        transformer.transform(samples, track_length_km=5)
+
+
+def test_transform_accepts_sample_at_track_length():
+    """Accept a telemetry sample exactly at the track length."""
+    transformer = TelemetryTransformer()
+    samples = [
+        TelemetrySample(
+            distance_m=5000,
+            speed_kph=250,
+            throttle_pct=100,
+            brake_pct=0,
+            gear=5,
+            rpm=10000,
+        )
+    ]
+
+    result = transformer.transform(samples, track_length_km=5)
+
+    assert result[0]["distance_pct"] == 100.0

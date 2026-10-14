@@ -1,3 +1,5 @@
+"""Transforms telemetry samples into an analytical representation."""
+
 from app.models.telemetry import TelemetrySample
 
 
@@ -9,7 +11,7 @@ class TelemetryTransformer:
         samples: list[TelemetrySample],
         track_length_km: float,
     ) -> list[dict]:
-        """Add normalized distance percentage while preserving telemetry values."""
+        """Normalize distance while preserving telemetry values."""
 
         if track_length_km <= 0:
             raise ValueError("track_length_km must be greater than zero")
@@ -19,6 +21,12 @@ class TelemetryTransformer:
         transformed = []
 
         for sample in samples:
+            if sample.distance_m > track_length_m:
+                raise ValueError(
+                    f"Sample distance ({sample.distance_m} m) exceeds "
+                    f"track length ({track_length_m} m)"
+                )
+
             transformed.append(
                 {
                     "distance_m": sample.distance_m,

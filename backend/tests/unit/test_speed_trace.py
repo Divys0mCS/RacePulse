@@ -72,3 +72,26 @@ def test_build_speed_trace_cleans_duplicate_samples():
 
     assert list(fig.data[0].x) == [0, 500]
     assert list(fig.data[0].y) == [120, 265]
+
+def test_build_speed_trace_resamples_at_requested_interval():
+    telemetry = Telemetry(telemetry_id=1, lap=make_lap())
+    telemetry.add_sample(make_sample(0, 120))
+    telemetry.add_sample(make_sample(500, 265))
+    telemetry.add_sample(make_sample(1200, 310))
+
+    fig = build_speed_trace(telemetry, resample_step_m=500)
+
+    assert list(fig.data[0].x) == [0, 500, 1000, 1200]
+    assert len(fig.data[0].y) == 4
+    assert fig.data[0].y[0] == 120
+    assert fig.data[0].y[1] == 265
+    assert fig.data[0].y[-1] == 310
+
+
+def test_build_speed_trace_rejects_nonpositive_resampling_interval():
+    telemetry = Telemetry(telemetry_id=1, lap=make_lap())
+    telemetry.add_sample(make_sample(0, 120))
+    telemetry.add_sample(make_sample(500, 265))
+
+    with pytest.raises(ValueError, match="step_m must be greater than zero"):
+        build_speed_trace(telemetry, resample_step_m=0)

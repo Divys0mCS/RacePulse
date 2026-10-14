@@ -87,3 +87,70 @@ def test_malformed_speed_raises_value_error(tmp_path):
     path = write_csv(tmp_path, [row(1, 1, 0, "fast")])
     with pytest.raises(ValueError, match="Row 2"):
         TelemetryLoader([lap]).load(path)
+
+def test_reloading_csv_does_not_duplicate_previous_samples(tmp_path):
+    """Loading the same CSV twice must not accumulate old samples."""
+    csv_path = tmp_path / "telemetry.csv"
+    csv_path.write_text(
+        "driver_number,lap_number,distance_m,speed_kph,"
+        "throttle_pct,brake_pct,gear,rpm\n"
+        "1,1,0,120,100,0,3,8000\n"
+        "1,1,100,150,100,0,4,9000\n",
+        encoding="utf-8",
+    )
+
+    # Reuse the existing lap-building helper from this test file.
+    laps = [make_lap(lap_id=1, driver_number=1, lap_number=1)]    
+    loader = TelemetryLoader(laps)
+    first_result = loader.load(csv_path)
+    second_result = loader.load(csv_path)
+
+    assert len(first_result) == 1
+    assert len(second_result) == 1
+    assert len(first_result[0].samples) == 2
+    assert len(second_result[0].samples) == 2
+    assert second_result[0].telemetry_id == 1
+    
+def test_empty_telemetry_csv_returns_empty_list(tmp_path):
+    """A CSV with valid headers but no samples returns an empty list."""
+    csv_path = tmp_path / "empty_telemetry.csv"
+    csv_path.write_text(
+        "driver_number,lap_number,distance_m,speed_kph,"
+        "throttle_pct,brake_pct,gear,rpm\n",
+        encoding="utf-8",
+    )
+
+    loader = TelemetryLoader(laps=[])
+
+    result = loader.load(csv_path)
+
+    assert result == []
+    
+def test_loading_empty_csv_after_populated_csv_clears_previous_results(
+    tmp_path,
+):
+    """Loading an empty CSV must not return samples from a previous load."""
+    populated_csv = tmp_path / "populated_telemetry.csv"
+    populated_csv.write_text(
+        "driver_number,lap_number,distance_m,speed_kph,"
+        "throttle_pct,brake_pct,gear,rpm\n"
+        "1,1,0,120,100,0,3,8000\n",
+        encoding="utf-8",
+    )
+
+    empty_csv = tmp_path / "empty_telemetry.csv"
+    empty_csv.write_text(
+        "driver_number,lap_number,distance_m,speed_kph,"
+        "throttle_pct,brake_pct,gear,rpm\n",
+        encoding="utf-8",
+    )
+
+    laps = [make_lap(lap_id=1, driver_number=1, lap_number=1)]
+    loader = TelemetryLoader(laps)
+
+    first_result = loader.load(populated_csv)
+    second_result = loader.load(empty_csv)
+
+    assert len(first_result) == 1
+    assert len(first_result[0].samples) == 1
+    assert second_result == []

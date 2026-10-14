@@ -1,3 +1,5 @@
+"""Resamples transformed telemetry onto a regular distance grid."""
+
 import math
 
 
@@ -7,7 +9,7 @@ class TelemetryResampler:
     def resample(self, samples: list[dict], step_m: float) -> list[dict]:
         """Return telemetry samples on a regular distance grid."""
 
-        if step_m <= 0:
+        if not math.isfinite(step_m) or step_m <= 0:
             raise ValueError("step_m must be greater than zero")
 
         if not samples:
@@ -16,6 +18,18 @@ class TelemetryResampler:
         ordered = sorted(samples, key=lambda sample: sample["distance_m"])
 
         distances = [sample["distance_m"] for sample in ordered]
+
+        for distance in distances:
+            if not math.isfinite(distance) or distance < 0:
+                raise ValueError(
+                    "distance_m values must be finite and non-negative"
+                )
+
+        for previous, current in zip(distances, distances[1:]):
+            if previous == current:
+                raise ValueError(
+                    f"Duplicate distance_m value found: {current}"
+                )
 
         if len(ordered) == 1:
             return [dict(ordered[0])]
@@ -65,9 +79,7 @@ class TelemetryResampler:
                     upper["distance_m"] - lower["distance_m"]
                 )
 
-            point = {
-                "distance_m": target_distance,
-            }
+            point = {"distance_m": target_distance}
 
             for key in continuous_keys:
                 point[key] = round(

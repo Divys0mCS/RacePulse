@@ -35,18 +35,24 @@ class TelemetryLoader:
         self._next_telemetry_id = 1
 
     def load(self, csv_path: str | Path) -> list[Telemetry]:
-        """Read the CSV at csv_path and return one Telemetry per Lap that had samples."""
+        """Read a telemetry CSV and return one Telemetry per Lap with samples."""
         csv_path = Path(csv_path)
+
         if not csv_path.exists():
             raise FileNotFoundError(f"CSV file not found: {csv_path}")
+
+        # Each load operation must start with a clean result.
+        self._telemetry_by_lap_id.clear()
+        self._next_telemetry_id = 1
 
         with csv_path.open(newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             self._validate_header(reader.fieldnames, csv_path)
-            for row_number, row in enumerate(reader, start=2):  # row 1 is the header
+
+            for row_number, row in enumerate(reader, start=2):
                 try:
                     self._row_to_sample(row)
-                except (KeyError, ValueError) as e:
+                except (KeyError, ValueError, TypeError) as e:
                     raise ValueError(
                         f"Row {row_number} in {csv_path.name} is malformed: {e}"
                     ) from e
@@ -87,3 +93,25 @@ class TelemetryLoader:
             )
             self._next_telemetry_id += 1
         return self._telemetry_by_lap_id[lap.lap_id]
+    
+    def test_loader_preserves_input_order_of_telemetry_samples(tmp_path):
+        """The loader currently preserves the order of rows in the CSV."""
+        csv_path = tmp_path / "unordered_telemetry.csv"
+        csv_path.write_text(
+            "driver_number,lap_number,distance_m,speed_kph,"
+            "throttle_pct,brake_pct,gear,rpm\n"
+            "1,1,100,150,100,0,4,9000\n"
+            "1,1,0,120,80,0,3,8000\n",
+            encoding="utf-8",
+        )
+
+        laps = [make_lap(lap_id=1, driver_number=1, lap_number=1)]
+        loader = TelemetryLoader(laps)
+
+        result = loader.load(csv_path)
+
+        assert len(result) == 1
+        assert [sample.distance_m for sample in result[0].samples] == [
+            100.0,
+            0.0,
+        ]
