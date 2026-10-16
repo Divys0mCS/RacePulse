@@ -62,3 +62,37 @@ def test_resampler_rejects_non_positive_step():
 
     with pytest.raises(ValueError):
         TelemetryResampler().resample(samples, step_m=-10)
+
+
+@pytest.mark.parametrize(
+    "invalid_distance",
+    [
+        -1,
+        float("nan"),
+        float("inf"),
+        float("-inf"),
+    ],
+    ids=["negative", "nan", "positive-infinity", "negative-infinity"],
+)
+def test_resampler_rejects_invalid_distances(invalid_distance):
+    samples = [
+        make_point(0, 100),
+        make_point(invalid_distance, 200),
+    ]
+
+    with pytest.raises(
+        ValueError,
+        match="distance_m values must be finite and non-negative",
+    ):
+        TelemetryResampler().resample(samples, step_m=100)
+
+
+def test_resampler_rejects_duplicate_distances():
+    samples = [
+        make_point(0, 100),
+        make_point(100, 150),
+        make_point(100, 200),
+    ]
+
+    with pytest.raises(ValueError, match="Duplicate distance_m"):
+        TelemetryResampler().resample(samples, step_m=50)
