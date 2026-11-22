@@ -1,0 +1,52 @@
+# ============================================================
+# RacePulse - .gitattributes
+# Store text files with LF in the repository regardless of the
+# platform, so Windows checkouts don't show every file as changed.
+# ============================================================
+
+# Normalize line endings on commit/checkout for all text files.
+* text=auto
+
+# Explicit text types (defensive: these must never be treated as binary).
+*.py       text
+*.pyi      text
+*.ts       text
+*.tsx      text
+*.js       text
+*.jsx      text
+*.json     text
+*.md       text
+*.yml      text
+*.yaml     text
+*.toml     text
+*.ini      text
+*.cfg      text
+*.txt      text
+*.css      text
+*.html     text
+*.sql      text
+*.sh       text
+*.ps1      text
+*.csv      text
+*.env.example text
+
+# Windows scripts keep CRLF so cmd.exe/PowerShell tooling behaves normally.
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+
+# Binary assets: never diff or convert.
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.webp     binary
+*.pdf      binary
+*.zip      binary
+*.gz       binary
+*.parquet  binary
+*.pkl      binary
+*.joblib   binary
+
+# Generated/lock files shouldn't show up in language stats.
+package-lock.json  linguist-generated

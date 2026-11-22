@@ -22,8 +22,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Python virtual environments
-.venv/
+# Python virtual environments (.venv* also covers alt envs like backend/.venv-ml)
+.venv*/
 venv/
 env/
 ENV/
@@ -212,5 +212,5 @@ racepulse.sqlite3
 .cache/
 .cache-data/
 
-# Local scratch file (CHANGED: new)
-sandbox.py
+# Local agent/tooling caches
+.freebuff/
