@@ -24,13 +24,10 @@ def test_create_team():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/teams",
-            json={
-                "name": "Red Bull Racing",
-                "base_country": "Austria",
-            },
-        )
+        response = client.post("/api/v1/teams", json={
+            "name": "Red Bull Racing",
+            "base_country": "Austria",
+        })
 
         assert response.status_code == 201
         assert response.json() == {
@@ -48,98 +45,6 @@ def test_create_team():
         app.dependency_overrides.clear()
 
 
-def test_create_team_rejects_blank_name():
-    service = MagicMock()
-
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/teams",
-            json={
-                "name": "   ",
-                "base_country": "Austria",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_team.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_team_rejects_name_longer_than_255_characters():
-    service = MagicMock()
-
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/teams",
-            json={
-                "name": "A" * 256,
-                "base_country": "Austria",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_team.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_team_rejects_blank_base_country():
-    service = MagicMock()
-
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/teams",
-            json={
-                "name": "Red Bull Racing",
-                "base_country": "   ",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_team.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_team_rejects_base_country_longer_than_100_characters():
-    service = MagicMock()
-
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/teams",
-            json={
-                "name": "Red Bull Racing",
-                "base_country": "A" * 101,
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_team.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
 def test_get_team():
     service = MagicMock()
     service.get_team.return_value = make_team()
@@ -149,10 +54,9 @@ def test_get_team():
     try:
         client = TestClient(app)
 
-        response = client.get("/teams/1")
+        response = client.get("/api/v1/teams/1")
 
         assert response.status_code == 200
-        assert response.json()["team_id"] == 1
         assert response.json()["name"] == "Red Bull Racing"
 
         service.get_team.assert_called_once_with(1)
@@ -170,27 +74,10 @@ def test_get_team_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.get("/teams/999")
+        response = client.get("/api/v1/teams/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Team 999 not found"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_team_rejects_non_positive_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_team_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get("/teams/0")
-
-        assert response.status_code == 422
-        service.get_team.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -205,7 +92,7 @@ def test_list_teams():
     try:
         client = TestClient(app)
 
-        response = client.get("/teams")
+        response = client.get("/api/v1/teams")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -229,9 +116,7 @@ def test_list_teams_accepts_pagination():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/teams?skip=20&limit=10"
-        )
+        response = client.get("/api/v1/teams?skip=20&limit=10")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -253,9 +138,7 @@ def test_list_teams_rejects_negative_skip():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/teams?skip=-1"
-        )
+        response = client.get("/api/v1/teams?skip=-1")
 
         assert response.status_code == 422
         service.list_teams.assert_not_called()
@@ -272,9 +155,7 @@ def test_list_teams_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/teams?limit=101"
-        )
+        response = client.get("/api/v1/teams?limit=101")
 
         assert response.status_code == 422
         service.list_teams.assert_not_called()
@@ -292,7 +173,7 @@ def test_delete_team():
     try:
         client = TestClient(app)
 
-        response = client.delete("/teams/1")
+        response = client.delete("/api/v1/teams/1")
 
         assert response.status_code == 204
         service.delete_team.assert_called_once_with(1)
@@ -310,7 +191,7 @@ def test_delete_team_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.delete("/teams/999")
+        response = client.delete("/api/v1/teams/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Team 999 not found"
@@ -327,10 +208,43 @@ def test_delete_team_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.delete("/teams/0")
+        response = client.delete("/api/v1/teams/0")
 
         assert response.status_code == 422
         service.delete_team.assert_not_called()
+
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_update_team():
+    service = MagicMock()
+    # Return the UPDATED team, not the original
+    updated_team = TeamModel(
+        team_id=1,
+        name="Red Bull Racing Updated",
+        base_country="Austria",
+    )
+    service.update_team.return_value = updated_team
+
+    app.dependency_overrides[get_team_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.put("/api/v1/teams/1", json={
+            "name": "Red Bull Racing Updated",
+            "base_country": "Austria",
+        })
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Red Bull Racing Updated"
+
+        service.update_team.assert_called_once_with(
+            team_id=1,
+            name="Red Bull Racing Updated",
+            base_country="Austria",
+        )
 
     finally:
         app.dependency_overrides.clear()

@@ -1,5 +1,4 @@
 from datetime import date
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -14,6 +13,19 @@ class RaceCreate(BaseModel):
     @classmethod
     def reject_blank_name(cls, value: str) -> str:
         if not value.strip():
+            raise ValueError("name must not be blank")
+        return value
+
+
+class RaceUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    season: int | None = Field(default=None, ge=1950)
+    round_number: int | None = Field(default=None, ge=1)
+
+    @field_validator("name", mode="after")
+    @classmethod
+    def reject_blank_name(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
             raise ValueError("name must not be blank")
         return value
 

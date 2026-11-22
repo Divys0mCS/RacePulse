@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_track_service
 from app.database.services.track_service import TrackService
-from app.schemas.track import TrackCreate, TrackResponse
+from app.schemas.track import TrackCreate, TrackUpdate, TrackResponse
 
 
 router = APIRouter(
-    prefix="/tracks",
     tags=["tracks"],
 )
 
@@ -52,6 +51,27 @@ def get_track(
     service: TrackService = Depends(get_track_service),
 ) -> TrackResponse:
     track = service.get_track(track_id)
+
+    if track is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Track {track_id} not found",
+        )
+
+    return track
+
+
+@router.put(
+    "/{track_id}",
+    response_model=TrackResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_track(
+    track_id: int = Path(gt=0),
+    track_data: TrackUpdate = ...,
+    service: TrackService = Depends(get_track_service),
+) -> TrackResponse:
+    track = service.update_track(track_id=track_id, name=track_data.name, country=track_data.country)
 
     if track is None:
         raise HTTPException(

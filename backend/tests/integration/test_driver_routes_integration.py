@@ -7,7 +7,7 @@ def test_driver_routes_work_end_to_end():
     client = TestClient(app)
 
     create_response = client.post(
-        "/drivers",
+        "/api/v1/drivers",
         json={
             "name": "Driver API Integration Test",
             "nationality": "Test Nationality",
@@ -24,12 +24,12 @@ def test_driver_routes_work_end_to_end():
 
     driver_id = created_driver["driver_id"]
 
-    get_response = client.get(f"/drivers/{driver_id}")
+    get_response = client.get(f"/api/v1/drivers/{driver_id}")
 
     assert get_response.status_code == 200
     assert get_response.json()["driver_id"] == driver_id
 
-    list_response = client.get("/drivers")
+    list_response = client.get("/api/v1/drivers")
 
     assert list_response.status_code == 200
     assert any(
@@ -37,10 +37,10 @@ def test_driver_routes_work_end_to_end():
         for driver in list_response.json()
     )
 
-    delete_response = client.delete(f"/drivers/{driver_id}")
+    delete_response = client.delete(f"/api/v1/drivers/{driver_id}")
 
     assert delete_response.status_code == 204
 
-    get_deleted_response = client.get(f"/drivers/{driver_id}")
+    get_deleted_response = client.get(f"/api/v1/drivers/{driver_id}")
 
     assert get_deleted_response.status_code == 404

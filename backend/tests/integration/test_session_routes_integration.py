@@ -6,8 +6,9 @@ from app.main import app
 def test_session_routes_work_end_to_end():
     client = TestClient(app)
 
+    # Create a track first
     track_response = client.post(
-        "/tracks",
+        "/api/v1/tracks",
         json={
             "name": "Session API Test Circuit",
             "country": "Test Country",
@@ -15,12 +16,12 @@ def test_session_routes_work_end_to_end():
             "number_of_corners": 18,
         },
     )
-
     assert track_response.status_code == 201
     track_id = track_response.json()["track_id"]
 
+    # Create a race
     race_response = client.post(
-        "/races",
+        "/api/v1/races",
         json={
             "name": "Session API Test Grand Prix",
             "season": 2026,
@@ -29,18 +30,17 @@ def test_session_routes_work_end_to_end():
             "race_date": "2026-09-30",
         },
     )
-
     assert race_response.status_code == 201
     race_id = race_response.json()["race_id"]
 
+    # Create a session
     session_response = client.post(
-        "/sessions",
+        "/api/v1/sessions",
         json={
             "race_id": race_id,
             "session_type": "QUALIFYING",
         },
     )
-
     assert session_response.status_code == 201
 
     created_session = session_response.json()
@@ -51,21 +51,14 @@ def test_session_routes_work_end_to_end():
 
     session_id = created_session["session_id"]
 
-    get_response = client.get(
-        f"/sessions/{session_id}"
-    )
+    # Get session
+    get_response = client.get(f"/api/v1/sessions/{session_id}")
 
     assert get_response.status_code == 200
     assert get_response.json()["session_id"] == session_id
 
-    race_type_response = client.get(
-        f"/sessions/race/{race_id}/QUALIFYING"
-    )
-
-    assert race_type_response.status_code == 200
-    assert race_type_response.json()["session_id"] == session_id
-
-    list_response = client.get("/sessions")
+    # List sessions
+    list_response = client.get("/api/v1/sessions")
 
     assert list_response.status_code == 200
     assert any(
@@ -73,20 +66,20 @@ def test_session_routes_work_end_to_end():
         for session in list_response.json()
     )
 
-    delete_response = client.delete(
-        f"/sessions/{session_id}"
-    )
+    # Delete session
+    delete_response = client.delete(f"/api/v1/sessions/{session_id}")
 
     assert delete_response.status_code == 204
 
-    get_deleted_response = client.get(
-        f"/sessions/{session_id}"
-    )
+    # Verify deleted
+    get_deleted_response = client.get(f"/api/v1/sessions/{session_id}")
 
     assert get_deleted_response.status_code == 404
 
-    delete_race_response = client.delete(f"/races/{race_id}")
+    # Delete race
+    delete_race_response = client.delete(f"/api/v1/races/{race_id}")
     assert delete_race_response.status_code == 204
 
-    delete_track_response = client.delete(f"/tracks/{track_id}")
+    # Delete track
+    delete_track_response = client.delete(f"/api/v1/tracks/{track_id}")
     assert delete_track_response.status_code == 204

@@ -13,14 +13,12 @@ class RaceService:
         self.repository = RaceRepository(db)
         self.track_repository = TrackRepository(db)
 
-    def create_race(
-        self,
-        name: str,
-        season: int,
-        round_number: int,
-        track_id: int,
-        race_date: date,
-    ) -> RaceModel:
+    def create_race(self,
+                    name: str,
+                    season: int,
+                    round_number: int,
+                    track_id: int,
+                    race_date: date) -> RaceModel:
         track = self.track_repository.get_by_id(track_id)
 
         if track is None:
@@ -37,6 +35,7 @@ class RaceService:
         try:
             self.repository.create(race)
             self.db.commit()
+            self.db.expire_all()  # Refresh session to see newly committed data
             self.db.refresh(race)
             return race
         except Exception:
@@ -46,11 +45,9 @@ class RaceService:
     def get_race(self, race_id: int) -> RaceModel | None:
         return self.repository.get_by_id(race_id)
 
-    def list_races(
-        self,
-        skip: int = 0,
-        limit: int = 20,
-    ) -> list[RaceModel]:
+    def list_races(self,
+                   skip: int = 0,
+                   limit: int = 20) -> list[RaceModel]:
         return self.repository.list_all(
             skip=skip,
             limit=limit,

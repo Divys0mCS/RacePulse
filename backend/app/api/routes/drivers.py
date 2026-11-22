@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_driver_service
 from app.database.services.driver_service import DriverService
-from app.schemas.driver import DriverCreate, DriverResponse
+from app.schemas.driver import DriverCreate, DriverUpdate, DriverResponse
 
 
 router = APIRouter(
-    prefix="/drivers",
     tags=["drivers"],
 )
 
@@ -50,6 +49,27 @@ def get_driver(
     service: DriverService = Depends(get_driver_service),
 ) -> DriverResponse:
     driver = service.get_driver(driver_id)
+
+    if driver is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Driver {driver_id} not found",
+        )
+
+    return driver
+
+
+@router.put(
+    "/{driver_id}",
+    response_model=DriverResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_driver(
+    driver_id: int = Path(gt=0),
+    driver_data: DriverUpdate = ...,
+    service: DriverService = Depends(get_driver_service),
+) -> DriverResponse:
+    driver = service.update_driver(driver_id=driver_id, name=driver_data.name)
 
     if driver is None:
         raise HTTPException(

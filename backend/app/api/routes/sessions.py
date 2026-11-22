@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_session_service
 from app.database.services.session_service import SessionService
-from app.schemas.session import SessionCreate, SessionResponse, SessionType
+from app.schemas.session import SessionCreate, SessionUpdate, SessionResponse
 
 
 router = APIRouter(
-    prefix="/sessions",
     tags=["sessions"],
 )
 
@@ -20,16 +19,10 @@ def create_session(
     session_data: SessionCreate,
     service: SessionService = Depends(get_session_service),
 ) -> SessionResponse:
-    try:
-        return service.create_session(
-            race_id=session_data.race_id,
-            session_type=session_data.session_type,
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+    return service.create_session(
+        race_id=session_data.race_id,
+        session_type=session_data.session_type,
+    )
 
 
 @router.get(
@@ -48,32 +41,6 @@ def list_sessions(
 
 
 @router.get(
-    "/race/{race_id}/{session_type}",
-    response_model=SessionResponse,
-)
-def get_session_by_race_and_type(
-    session_type: SessionType,
-    race_id: int = Path(gt=0),
-    service: SessionService = Depends(get_session_service),
-) -> SessionResponse:
-    session = service.get_session_by_race_and_type(
-        race_id,
-        session_type,
-    )
-
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=(
-                f"Session {session_type} for race "
-                f"{race_id} not found"
-            ),
-        )
-
-    return session
-
-
-@router.get(
     "/{session_id}",
     response_model=SessionResponse,
 )
@@ -82,6 +49,40 @@ def get_session(
     service: SessionService = Depends(get_session_service),
 ) -> SessionResponse:
     session = service.get_session(session_id)
+
+    if session is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session {session_id} not found",
+        )
+
+    return session
+
+
+@router.get(
+    "/race/{race_id}/{session_type}",
+    response_model=list[SessionResponse],
+)
+def get_session_by_race_and_type(
+    race_id: int,
+    session_type: str,
+    service: SessionService = Depends(get_session_service),
+) -> list[SessionResponse]:
+    sessions = service.get_session_by_race_and_type(race_id=race_id, session_type=session_type)
+    return sessions
+
+
+@router.put(
+    "/{session_id}",
+    response_model=SessionResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_session(
+    session_id: int = Path(gt=0),
+    session_data: SessionUpdate = ...,
+    service: SessionService = Depends(get_session_service),
+) -> SessionResponse:
+    session = service.update_session(session_id=session_id, session_type=session_data.session_type)
 
     if session is None:
         raise HTTPException(

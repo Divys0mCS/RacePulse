@@ -7,7 +7,7 @@ def test_lap_routes_work_end_to_end():
     client = TestClient(app)
 
     track_response = client.post(
-        "/tracks",
+        "/api/v1/tracks",
         json={
             "name": "Lap API Test Circuit",
             "country": "Test Country",
@@ -20,7 +20,7 @@ def test_lap_routes_work_end_to_end():
     track_id = track_response.json()["track_id"]
 
     race_response = client.post(
-        "/races",
+        "/api/v1/races",
         json={
             "name": "Lap API Test Grand Prix",
             "season": 2026,
@@ -34,7 +34,7 @@ def test_lap_routes_work_end_to_end():
     race_id = race_response.json()["race_id"]
 
     session_response = client.post(
-        "/sessions",
+        "/api/v1/sessions",
         json={
             "race_id": race_id,
             "session_type": "RACE",
@@ -45,7 +45,7 @@ def test_lap_routes_work_end_to_end():
     session_id = session_response.json()["session_id"]
 
     driver_response = client.post(
-        "/drivers",
+        "/api/v1/drivers",
         json={
             "name": "Lap API Test Driver",
             "nationality": "Test Nationality",
@@ -56,7 +56,7 @@ def test_lap_routes_work_end_to_end():
     driver_id = driver_response.json()["driver_id"]
 
     team_response = client.post(
-        "/teams",
+        "/api/v1/teams",
         json={
             "name": "Lap API Test Team",
             "base_country": "Test Country",
@@ -67,7 +67,7 @@ def test_lap_routes_work_end_to_end():
     team_id = team_response.json()["team_id"]
 
     lap_response = client.post(
-        "/laps",
+        "/api/v1/laps",
         json={
             "session_id": session_id,
             "driver_id": driver_id,
@@ -92,13 +92,13 @@ def test_lap_routes_work_end_to_end():
 
     lap_id = created_lap["lap_id"]
 
-    get_response = client.get(f"/laps/{lap_id}")
+    get_response = client.get(f"/api/v1/laps/{lap_id}")
 
     assert get_response.status_code == 200
     assert get_response.json()["lap_id"] == lap_id
 
     session_laps_response = client.get(
-        f"/laps/session/{session_id}"
+        f"/api/v1/laps/session/{session_id}"
     )
 
     assert session_laps_response.status_code == 200
@@ -108,14 +108,14 @@ def test_lap_routes_work_end_to_end():
     )
 
     composite_response = client.get(
-        f"/laps/session/{session_id}/driver/{driver_id}/lap/1"
+        f"/api/v1/laps/session/{session_id}/driver/{driver_id}/lap/1"
     )
 
     assert composite_response.status_code == 200
     assert composite_response.json()["lap_id"] == lap_id
 
     duplicate_response = client.post(
-        "/laps",
+        "/api/v1/laps",
         json={
             "session_id": session_id,
             "driver_id": driver_id,
@@ -130,16 +130,16 @@ def test_lap_routes_work_end_to_end():
 
     assert duplicate_response.status_code == 409
 
-    delete_lap_response = client.delete(f"/laps/{lap_id}")
+    delete_lap_response = client.delete(f"/api/v1/laps/{lap_id}")
 
     assert delete_lap_response.status_code == 204
 
-    get_deleted_lap_response = client.get(f"/laps/{lap_id}")
+    get_deleted_lap_response = client.get(f"/api/v1/laps/{lap_id}")
 
     assert get_deleted_lap_response.status_code == 404
 
-    assert client.delete(f"/sessions/{session_id}").status_code == 204
-    assert client.delete(f"/drivers/{driver_id}").status_code == 204
-    assert client.delete(f"/teams/{team_id}").status_code == 204
-    assert client.delete(f"/races/{race_id}").status_code == 204
-    assert client.delete(f"/tracks/{track_id}").status_code == 204
+    assert client.delete(f"/api/v1/sessions/{session_id}").status_code == 204
+    assert client.delete(f"/api/v1/drivers/{driver_id}").status_code == 204
+    assert client.delete(f"/api/v1/teams/{team_id}").status_code == 204
+    assert client.delete(f"/api/v1/races/{race_id}").status_code == 204
+    assert client.delete(f"/api/v1/tracks/{track_id}").status_code == 204

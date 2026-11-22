@@ -15,9 +15,7 @@ from app.services.analysis_service import (
     LapAnalysisService,
 )
 
-
 router = APIRouter(
-    prefix="/api/v1/analysis",
     tags=["analysis"],
 )
 

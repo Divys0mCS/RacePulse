@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_team_service
 from app.database.services.team_service import TeamService
-from app.schemas.team import TeamCreate, TeamResponse
+from app.schemas.team import TeamCreate, TeamUpdate, TeamResponse
 
 
 router = APIRouter(
-    prefix="/teams",
     tags=["teams"],
 )
 
@@ -50,6 +49,27 @@ def get_team(
     service: TeamService = Depends(get_team_service),
 ) -> TeamResponse:
     team = service.get_team(team_id)
+
+    if team is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Team {team_id} not found",
+        )
+
+    return team
+
+
+@router.put(
+    "/{team_id}",
+    response_model=TeamResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_team(
+    team_id: int = Path(gt=0),
+    team_data: TeamUpdate = ...,
+    service: TeamService = Depends(get_team_service),
+) -> TeamResponse:
+    team = service.update_team(team_id=team_id, name=team_data.name, base_country=team_data.base_country)
 
     if team is None:
         raise HTTPException(

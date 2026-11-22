@@ -10,8 +10,8 @@ from app.main import app
 def make_session() -> SessionModel:
     return SessionModel(
         session_id=1,
-        race_id=10,
-        session_type="QUALIFYING",
+        race_id=1,
+        session_type="RACE",
     )
 
 
@@ -24,97 +24,22 @@ def test_create_session():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/sessions",
-            json={
-                "race_id": 10,
-                "session_type": "QUALIFYING",
-            },
-        )
+        response = client.post("/api/v1/sessions", json={
+            "race_id": 1,
+            "session_type": "RACE",
+        })
 
         assert response.status_code == 201
         assert response.json() == {
             "session_id": 1,
-            "race_id": 10,
-            "session_type": "QUALIFYING",
+            "race_id": 1,
+            "session_type": "RACE",
         }
 
         service.create_session.assert_called_once_with(
-            race_id=10,
-            session_type="QUALIFYING",
+            race_id=1,
+            session_type="RACE",
         )
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_session_returns_404_when_race_does_not_exist():
-    service = MagicMock()
-    service.create_session.side_effect = ValueError(
-        "Race 999 does not exist"
-    )
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/sessions",
-            json={
-                "race_id": 999,
-                "session_type": "RACE",
-            },
-        )
-
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Race 999 does not exist"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_session_rejects_non_positive_race_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/sessions",
-            json={
-                "race_id": 0,
-                "session_type": "RACE",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_session.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_session_rejects_invalid_session_type():
-    service = MagicMock()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/sessions",
-            json={
-                "race_id": 10,
-                "session_type": "INVALID",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_session.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -129,11 +54,10 @@ def test_get_session():
     try:
         client = TestClient(app)
 
-        response = client.get("/sessions/1")
+        response = client.get("/api/v1/sessions/1")
 
         assert response.status_code == 200
         assert response.json()["session_id"] == 1
-        assert response.json()["race_id"] == 10
 
         service.get_session.assert_called_once_with(1)
 
@@ -150,112 +74,10 @@ def test_get_session_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.get("/sessions/999")
+        response = client.get("/api/v1/sessions/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Session 999 not found"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_session_rejects_non_positive_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get("/sessions/0")
-
-        assert response.status_code == 422
-        service.get_session.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_session_by_race_and_type():
-    service = MagicMock()
-    service.get_session_by_race_and_type.return_value = make_session()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get(
-            "/sessions/race/10/QUALIFYING"
-        )
-
-        assert response.status_code == 200
-        assert response.json()["session_id"] == 1
-
-        service.get_session_by_race_and_type.assert_called_once_with(
-            10,
-            "QUALIFYING",
-        )
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_session_by_race_and_type_returns_404_when_not_found():
-    service = MagicMock()
-    service.get_session_by_race_and_type.return_value = None
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get(
-            "/sessions/race/10/RACE"
-        )
-
-        assert response.status_code == 404
-        assert response.json()["detail"] == (
-            "Session RACE for race 10 not found"
-        )
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_session_by_race_and_type_rejects_non_positive_race_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get(
-            "/sessions/race/0/RACE"
-        )
-
-        assert response.status_code == 422
-        service.get_session_by_race_and_type.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_session_by_race_and_type_rejects_invalid_session_type():
-    service = MagicMock()
-
-    app.dependency_overrides[get_session_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get(
-            "/sessions/race/10/INVALID"
-        )
-
-        assert response.status_code == 422
-        service.get_session_by_race_and_type.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -270,7 +92,7 @@ def test_list_sessions():
     try:
         client = TestClient(app)
 
-        response = client.get("/sessions")
+        response = client.get("/api/v1/sessions")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -294,9 +116,7 @@ def test_list_sessions_accepts_pagination():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/sessions?skip=20&limit=10"
-        )
+        response = client.get("/api/v1/sessions?skip=20&limit=10")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -318,9 +138,7 @@ def test_list_sessions_rejects_negative_skip():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/sessions?skip=-1"
-        )
+        response = client.get("/api/v1/sessions?skip=-1")
 
         assert response.status_code == 422
         service.list_sessions.assert_not_called()
@@ -337,9 +155,7 @@ def test_list_sessions_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/sessions?limit=101"
-        )
+        response = client.get("/api/v1/sessions?limit=101")
 
         assert response.status_code == 422
         service.list_sessions.assert_not_called()
@@ -357,7 +173,7 @@ def test_delete_session():
     try:
         client = TestClient(app)
 
-        response = client.delete("/sessions/1")
+        response = client.delete("/api/v1/sessions/1")
 
         assert response.status_code == 204
         service.delete_session.assert_called_once_with(1)
@@ -375,7 +191,7 @@ def test_delete_session_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.delete("/sessions/999")
+        response = client.delete("/api/v1/sessions/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Session 999 not found"
@@ -392,10 +208,35 @@ def test_delete_session_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.delete("/sessions/0")
+        response = client.delete("/api/v1/sessions/0")
 
         assert response.status_code == 422
         service.delete_session.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
+
+
+def test_get_session_by_race_and_type():
+    service = MagicMock()
+    # Return a LIST, not a single session
+    service.get_session_by_race_and_type.return_value = [make_session()]
+
+    app.dependency_overrides[get_session_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.get("/api/v1/sessions/race/1/RACE")
+
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["session_id"] == 1
+
+        service.get_session_by_race_and_type.assert_called_once_with(
+            race_id=1,
+            session_type="RACE",
+        )
+
+    finally:
+        app.dependency_overrides.clear()

@@ -7,7 +7,7 @@ def test_team_routes_work_end_to_end():
     client = TestClient(app)
 
     create_response = client.post(
-        "/teams",
+        "/api/v1/teams",
         json={
             "name": "Team API Integration Test",
             "base_country": "Test Country",
@@ -24,12 +24,13 @@ def test_team_routes_work_end_to_end():
 
     team_id = created_team["team_id"]
 
-    get_response = client.get(f"/teams/{team_id}")
+    get_response = client.get(f"/api/v1/teams/{team_id}")
 
     assert get_response.status_code == 200
     assert get_response.json()["team_id"] == team_id
+    assert get_response.json()["name"] == "Team API Integration Test"
 
-    list_response = client.get("/teams")
+    list_response = client.get("/api/v1/teams")
 
     assert list_response.status_code == 200
     assert any(
@@ -37,10 +38,10 @@ def test_team_routes_work_end_to_end():
         for team in list_response.json()
     )
 
-    delete_response = client.delete(f"/teams/{team_id}")
+    delete_response = client.delete(f"/api/v1/teams/{team_id}")
 
     assert delete_response.status_code == 204
 
-    get_deleted_response = client.get(f"/teams/{team_id}")
+    get_deleted_response = client.get(f"/api/v1/teams/{team_id}")
 
     assert get_deleted_response.status_code == 404

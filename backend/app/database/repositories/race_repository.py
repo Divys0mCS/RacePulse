@@ -16,11 +16,9 @@ class RaceRepository:
     def get_by_id(self, race_id: int) -> RaceModel | None:
         return self.db.get(RaceModel, race_id)
 
-    def list_all(
-        self,
-        skip: int = 0,
-        limit: int = 20,
-    ) -> list[RaceModel]:
+    def list_all(self,
+                 skip: int = 0,
+                 limit: int = 20) -> list[RaceModel]:
         statement = (
             select(RaceModel)
             .order_by(RaceModel.race_id)
@@ -31,3 +29,4 @@ class RaceRepository:
 
     def delete(self, race: RaceModel) -> None:
         self.db.delete(race)
+        self.db.commit()

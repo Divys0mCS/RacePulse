@@ -2,11 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.dependencies import get_race_service
 from app.database.services.race_service import RaceService
-from app.schemas.race import RaceCreate, RaceResponse
+from app.schemas.race import RaceCreate, RaceUpdate, RaceResponse
 
 
 router = APIRouter(
-    prefix="/races",
     tags=["races"],
 )
 
@@ -20,19 +19,13 @@ def create_race(
     race_data: RaceCreate,
     service: RaceService = Depends(get_race_service),
 ) -> RaceResponse:
-    try:
-        return service.create_race(
-            name=race_data.name,
-            season=race_data.season,
-            round_number=race_data.round_number,
-            track_id=race_data.track_id,
-            race_date=race_data.race_date,
-        )
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        ) from exc
+    return service.create_race(
+        name=race_data.name,
+        season=race_data.season,
+        round_number=race_data.round_number,
+        track_id=race_data.track_id,
+        race_date=race_data.race_date,
+    )
 
 
 @router.get(
@@ -59,6 +52,27 @@ def get_race(
     service: RaceService = Depends(get_race_service),
 ) -> RaceResponse:
     race = service.get_race(race_id)
+
+    if race is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Race {race_id} not found",
+        )
+
+    return race
+
+
+@router.put(
+    "/{race_id}",
+    response_model=RaceResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_race(
+    race_id: int = Path(gt=0),
+    race_data: RaceUpdate = ...,
+    service: RaceService = Depends(get_race_service),
+) -> RaceResponse:
+    race = service.update_race(race_id=race_id, name=race_data.name)
 
     if race is None:
         raise HTTPException(

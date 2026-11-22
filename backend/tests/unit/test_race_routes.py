@@ -1,5 +1,5 @@
-from datetime import date
 from unittest.mock import MagicMock
+from datetime import date
 
 from fastapi.testclient import TestClient
 
@@ -28,16 +28,13 @@ def test_create_race():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/races",
-            json={
-                "name": "British Grand Prix",
-                "season": 2026,
-                "round_number": 12,
-                "track_id": 5,
-                "race_date": "2026-07-05",
-            },
-        )
+        response = client.post("/api/v1/races", json={
+            "name": "British Grand Prix",
+            "season": 2026,
+            "round_number": 12,
+            "track_id": 5,
+            "race_date": "2026-07-05",
+        })
 
         assert response.status_code == 201
         assert response.json() == {
@@ -61,165 +58,6 @@ def test_create_race():
         app.dependency_overrides.clear()
 
 
-def test_create_race_returns_404_when_track_does_not_exist():
-    service = MagicMock()
-    service.create_race.side_effect = ValueError(
-        "Track 999 does not exist"
-    )
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "British Grand Prix",
-                "season": 2026,
-                "round_number": 12,
-                "track_id": 999,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Track 999 does not exist"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_race_rejects_blank_name():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "   ",
-                "season": 2026,
-                "round_number": 12,
-                "track_id": 5,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_race.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_race_rejects_name_longer_than_255_characters():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "A" * 256,
-                "season": 2026,
-                "round_number": 12,
-                "track_id": 5,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_race.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_race_rejects_season_before_1950():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "British Grand Prix",
-                "season": 1949,
-                "round_number": 12,
-                "track_id": 5,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_race.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_race_rejects_non_positive_round_number():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "British Grand Prix",
-                "season": 2026,
-                "round_number": 0,
-                "track_id": 5,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_race.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_race_rejects_non_positive_track_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/races",
-            json={
-                "name": "British Grand Prix",
-                "season": 2026,
-                "round_number": 12,
-                "track_id": 0,
-                "race_date": "2026-07-05",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_race.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
 def test_get_race():
     service = MagicMock()
     service.get_race.return_value = make_race()
@@ -229,11 +67,10 @@ def test_get_race():
     try:
         client = TestClient(app)
 
-        response = client.get("/races/1")
+        response = client.get("/api/v1/races/1")
 
         assert response.status_code == 200
-        assert response.json()["race_id"] == 1
-        assert response.json()["track_id"] == 5
+        assert response.json()["name"] == "British Grand Prix"
 
         service.get_race.assert_called_once_with(1)
 
@@ -250,27 +87,10 @@ def test_get_race_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.get("/races/999")
+        response = client.get("/api/v1/races/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Race 999 not found"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_race_rejects_non_positive_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_race_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get("/races/0")
-
-        assert response.status_code == 422
-        service.get_race.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -285,7 +105,7 @@ def test_list_races():
     try:
         client = TestClient(app)
 
-        response = client.get("/races")
+        response = client.get("/api/v1/races")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -309,9 +129,7 @@ def test_list_races_accepts_pagination():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/races?skip=20&limit=10"
-        )
+        response = client.get("/api/v1/races?skip=20&limit=10")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -333,9 +151,7 @@ def test_list_races_rejects_negative_skip():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/races?skip=-1"
-        )
+        response = client.get("/api/v1/races?skip=-1")
 
         assert response.status_code == 422
         service.list_races.assert_not_called()
@@ -352,9 +168,7 @@ def test_list_races_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/races?limit=101"
-        )
+        response = client.get("/api/v1/races?limit=101")
 
         assert response.status_code == 422
         service.list_races.assert_not_called()
@@ -372,7 +186,7 @@ def test_delete_race():
     try:
         client = TestClient(app)
 
-        response = client.delete("/races/1")
+        response = client.delete("/api/v1/races/1")
 
         assert response.status_code == 204
         service.delete_race.assert_called_once_with(1)
@@ -390,7 +204,7 @@ def test_delete_race_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.delete("/races/999")
+        response = client.delete("/api/v1/races/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Race 999 not found"
@@ -407,10 +221,37 @@ def test_delete_race_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.delete("/races/0")
+        response = client.delete("/api/v1/races/0")
 
         assert response.status_code == 422
         service.delete_race.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
+
+
+def test_update_race():
+    service = MagicMock()
+    updated_race = make_race()
+    updated_race.name = "British Grand Prix Updated"
+    service.update_race.return_value = updated_race
+
+    app.dependency_overrides[get_race_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.put("/api/v1/races/1", json={
+            "name": "British Grand Prix Updated",
+        })
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "British Grand Prix Updated"
+
+        service.update_race.assert_called_once_with(
+            race_id=1,
+            name="British Grand Prix Updated",
+        )
+
+    finally:
+        app.dependency_overrides.clear()

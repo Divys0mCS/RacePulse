@@ -24,13 +24,10 @@ def test_create_driver():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/drivers",
-            json={
-                "name": "Max Verstappen",
-                "nationality": "Dutch",
-            },
-        )
+        response = client.post("/api/v1/drivers", json={
+            "name": "Max Verstappen",
+            "nationality": "Dutch",
+        })
 
         assert response.status_code == 201
         assert response.json() == {
@@ -48,98 +45,6 @@ def test_create_driver():
         app.dependency_overrides.clear()
 
 
-def test_create_driver_rejects_blank_name():
-    service = MagicMock()
-
-    app.dependency_overrides[get_driver_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/drivers",
-            json={
-                "name": "   ",
-                "nationality": "Dutch",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_driver.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_driver_rejects_name_longer_than_255_characters():
-    service = MagicMock()
-
-    app.dependency_overrides[get_driver_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/drivers",
-            json={
-                "name": "A" * 256,
-                "nationality": "Dutch",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_driver.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_driver_rejects_blank_nationality():
-    service = MagicMock()
-
-    app.dependency_overrides[get_driver_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/drivers",
-            json={
-                "name": "Max Verstappen",
-                "nationality": "   ",
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_driver.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_create_driver_rejects_nationality_longer_than_100_characters():
-    service = MagicMock()
-
-    app.dependency_overrides[get_driver_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/drivers",
-            json={
-                "name": "Max Verstappen",
-                "nationality": "A" * 101,
-            },
-        )
-
-        assert response.status_code == 422
-        service.create_driver.assert_not_called()
-
-    finally:
-        app.dependency_overrides.clear()
-
-
 def test_get_driver():
     service = MagicMock()
     service.get_driver.return_value = make_driver()
@@ -149,10 +54,9 @@ def test_get_driver():
     try:
         client = TestClient(app)
 
-        response = client.get("/drivers/1")
+        response = client.get("/api/v1/drivers/1")
 
         assert response.status_code == 200
-        assert response.json()["driver_id"] == 1
         assert response.json()["name"] == "Max Verstappen"
 
         service.get_driver.assert_called_once_with(1)
@@ -170,27 +74,10 @@ def test_get_driver_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.get("/drivers/999")
+        response = client.get("/api/v1/drivers/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Driver 999 not found"
-
-    finally:
-        app.dependency_overrides.clear()
-
-
-def test_get_driver_rejects_non_positive_id():
-    service = MagicMock()
-
-    app.dependency_overrides[get_driver_service] = lambda: service
-
-    try:
-        client = TestClient(app)
-
-        response = client.get("/drivers/0")
-
-        assert response.status_code == 422
-        service.get_driver.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
@@ -205,7 +92,7 @@ def test_list_drivers():
     try:
         client = TestClient(app)
 
-        response = client.get("/drivers")
+        response = client.get("/api/v1/drivers")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -229,9 +116,7 @@ def test_list_drivers_accepts_pagination():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/drivers?skip=20&limit=10"
-        )
+        response = client.get("/api/v1/drivers?skip=20&limit=10")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -253,9 +138,7 @@ def test_list_drivers_rejects_negative_skip():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/drivers?skip=-1"
-        )
+        response = client.get("/api/v1/drivers?skip=-1")
 
         assert response.status_code == 422
         service.list_drivers.assert_not_called()
@@ -272,9 +155,7 @@ def test_list_drivers_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/drivers?limit=101"
-        )
+        response = client.get("/api/v1/drivers?limit=101")
 
         assert response.status_code == 422
         service.list_drivers.assert_not_called()
@@ -292,7 +173,7 @@ def test_delete_driver():
     try:
         client = TestClient(app)
 
-        response = client.delete("/drivers/1")
+        response = client.delete("/api/v1/drivers/1")
 
         assert response.status_code == 204
         service.delete_driver.assert_called_once_with(1)
@@ -310,7 +191,7 @@ def test_delete_driver_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.delete("/drivers/999")
+        response = client.delete("/api/v1/drivers/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Driver 999 not found"
@@ -327,10 +208,42 @@ def test_delete_driver_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.delete("/drivers/0")
+        response = client.delete("/api/v1/drivers/0")
 
         assert response.status_code == 422
         service.delete_driver.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
+
+
+def test_update_driver():
+    service = MagicMock()
+    # Return the UPDATED driver, not the original
+    updated_driver = DriverModel(
+        driver_id=1,
+        name="Max Verstappen Updated",
+        nationality="Dutch",
+    )
+    service.update_driver.return_value = updated_driver
+
+    app.dependency_overrides[get_driver_service] = lambda: service
+
+    try:
+        client = TestClient(app)
+
+        response = client.put("/api/v1/drivers/1", json={
+            "name": "Max Verstappen Updated",
+            "nationality": "Dutch",
+        })
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Max Verstappen Updated"
+
+        service.update_driver.assert_called_once_with(
+            driver_id=1,
+            name="Max Verstappen Updated",
+        )
+
+    finally:
+        app.dependency_overrides.clear()

@@ -26,15 +26,12 @@ def test_create_track():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/tracks",
-            json={
-                "name": "Silverstone",
-                "country": "United Kingdom",
-                "length_km": 5.891,
-                "number_of_corners": 18,
-            },
-        )
+        response = client.post("/api/v1/tracks", json={
+            "name": "Silverstone",
+            "country": "United Kingdom",
+            "length_km": 5.891,
+            "number_of_corners": 18,
+        })
 
         assert response.status_code == 201
         assert response.json() == {
@@ -65,7 +62,7 @@ def test_get_track():
     try:
         client = TestClient(app)
 
-        response = client.get("/tracks/1")
+        response = client.get("/api/v1/tracks/1")
 
         assert response.status_code == 200
         assert response.json()["name"] == "Silverstone"
@@ -85,7 +82,7 @@ def test_get_track_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.get("/tracks/999")
+        response = client.get("/api/v1/tracks/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Track 999 not found"
@@ -103,7 +100,7 @@ def test_list_tracks():
     try:
         client = TestClient(app)
 
-        response = client.get("/tracks")
+        response = client.get("/api/v1/tracks")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -127,7 +124,7 @@ def test_delete_track():
     try:
         client = TestClient(app)
 
-        response = client.delete("/tracks/1")
+        response = client.delete("/api/v1/tracks/1")
 
         assert response.status_code == 204
         service.delete_track.assert_called_once_with(1)
@@ -145,7 +142,7 @@ def test_delete_track_returns_404_when_not_found():
     try:
         client = TestClient(app)
 
-        response = client.delete("/tracks/999")
+        response = client.delete("/api/v1/tracks/999")
 
         assert response.status_code == 404
         assert response.json()["detail"] == "Track 999 not found"
@@ -163,9 +160,7 @@ def test_list_tracks_accepts_pagination():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/tracks?skip=20&limit=10"
-        )
+        response = client.get("/api/v1/tracks?skip=20&limit=10")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -187,9 +182,7 @@ def test_list_tracks_rejects_negative_skip():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/tracks?skip=-1"
-        )
+        response = client.get("/api/v1/tracks?skip=-1")
 
         assert response.status_code == 422
         service.list_tracks.assert_not_called()
@@ -206,15 +199,14 @@ def test_list_tracks_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get(
-            "/tracks?limit=101"
-        )
+        response = client.get("/api/v1/tracks?limit=101")
 
         assert response.status_code == 422
         service.list_tracks.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
+
 
 def test_create_track_rejects_blank_name():
     service = MagicMock()
@@ -223,15 +215,12 @@ def test_create_track_rejects_blank_name():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/tracks",
-            json={
-                "name": "   ",
-                "country": "United Kingdom",
-                "length_km": 5.891,
-                "number_of_corners": 18,
-            },
-        )
+        response = client.post("/api/v1/tracks", json={
+            "name": "   ",
+            "country": "United Kingdom",
+            "length_km": 5.891,
+            "number_of_corners": 18,
+        })
 
         assert response.status_code == 422
         service.create_track.assert_not_called()
@@ -247,15 +236,12 @@ def test_create_track_rejects_blank_country():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/tracks",
-            json={
-                "name": "Silverstone",
-                "country": "   ",
-                "length_km": 5.891,
-                "number_of_corners": 18,
-            },
-        )
+        response = client.post("/api/v1/tracks", json={
+            "name": "Silverstone",
+            "country": "   ",
+            "length_km": 5.891,
+            "number_of_corners": 18,
+        })
 
         assert response.status_code == 422
         service.create_track.assert_not_called()
@@ -271,15 +257,12 @@ def test_create_track_rejects_name_longer_than_database_limit():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/tracks",
-            json={
-                "name": "A" * 256,
-                "country": "United Kingdom",
-                "length_km": 5.891,
-                "number_of_corners": 18,
-            },
-        )
+        response = client.post("/api/v1/tracks", json={
+            "name": "A" * 256,
+            "country": "United Kingdom",
+            "length_km": 5.891,
+            "number_of_corners": 18,
+        })
 
         assert response.status_code == 422
         service.create_track.assert_not_called()
@@ -295,15 +278,12 @@ def test_create_track_rejects_country_longer_than_database_limit():
     try:
         client = TestClient(app)
 
-        response = client.post(
-            "/tracks",
-            json={
-                "name": "Silverstone",
-                "country": "A" * 101,
-                "length_km": 5.891,
-                "number_of_corners": 18,
-            },
-        )
+        response = client.post("/api/v1/tracks", json={
+            "name": "Silverstone",
+            "country": "A" * 101,
+            "length_km": 5.891,
+            "number_of_corners": 18,
+        })
 
         assert response.status_code == 422
         service.create_track.assert_not_called()
@@ -319,7 +299,7 @@ def test_get_track_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.get("/tracks/0")
+        response = client.get("/api/v1/tracks/0")
 
         assert response.status_code == 422
         service.get_track.assert_not_called()
@@ -335,11 +315,10 @@ def test_delete_track_rejects_non_positive_id():
     try:
         client = TestClient(app)
 
-        response = client.delete("/tracks/-1")
+        response = client.delete("/api/v1/tracks/-1")
 
         assert response.status_code == 422
         service.delete_track.assert_not_called()
 
     finally:
         app.dependency_overrides.clear()
-

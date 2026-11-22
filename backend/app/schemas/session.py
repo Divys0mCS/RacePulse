@@ -1,5 +1,4 @@
 from typing import Literal
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -17,6 +16,10 @@ SessionType = Literal[
 class SessionCreate(BaseModel):
     race_id: int = Field(gt=0)
     session_type: SessionType
+
+
+class SessionUpdate(BaseModel):
+    session_type: SessionType | None = Field(default=None)
 
 
 class SessionResponse(BaseModel):
