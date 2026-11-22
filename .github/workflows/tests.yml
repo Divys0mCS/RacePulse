@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -16,20 +17,20 @@ jobs:
           POSTGRES_USER: racepulse
           POSTGRES_PASSWORD: racepulse
           POSTGRES_DB: racepulse_test
-        ports: [5432:5432]
+        ports:
+          - "5432:5432"
         options: >-
-          --health-standard-in
-          --health-cmaillabel postgres
-          --health-addr=127.0.0.1:5432
-        state: started
-        timeout_seconds: 20000
+          --health-cmd "pg_isready -U racepulse -d racepulse_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version-file: .python-version
 
       - name: Install dependencies
         run: |
@@ -38,14 +39,15 @@ jobs:
 
       - name: Run migrations
         env:
-          DATABASE_URL: postgres://racepulse:racepulse@localhost:5432/racepulse_test
+          DATABASE_URL: postgresql+pg8000://racepulse:racepulse@localhost:5432/racepulse_test
         run: |
           cd backend
           alembic upgrade head
 
       - name: Run full test suite
         env:
-          DATABASE_URL: postgres://racepulse:racepulse@localhost:5432/racepulse_test
+          DATABASE_URL: postgresql+pg8000://racepulse:racepulse@localhost:5432/racepulse_test
+          TEST_DATABASE_URL: postgresql+pg8000://racepulse:racepulse@localhost:5432/racepulse_test
           CORS_ORIGINS: http://localhost:3000
           ENVIRONMENT: test
           SECRET_KEY: test-secret-key
