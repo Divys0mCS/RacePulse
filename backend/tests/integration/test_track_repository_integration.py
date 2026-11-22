@@ -5,7 +5,7 @@ from app.database.repositories.track_repository import TrackRepository
 
 def test_track_repository_persists_track():
     db = SessionLocal()
-
+    
     try:
         repository = TrackRepository(db)
 
@@ -33,7 +33,9 @@ def test_track_repository_persists_track():
         assert fetched_track.number_of_corners == 10
 
         # LIST ALL
-        tracks = repository.list_all(limit=100)
+        # Use limit=500 to ensure we capture the newly created track
+        # (database may have many tracks from previous test runs)
+        tracks = list(repository.list_all(limit=500))
 
         assert any(
             existing.track_id == created_track.track_id

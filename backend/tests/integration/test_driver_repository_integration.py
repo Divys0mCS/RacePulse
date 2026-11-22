@@ -5,7 +5,7 @@ from app.database.repositories.driver_repository import DriverRepository
 
 def test_driver_repository_persists_driver():
     db = SessionLocal()
-
+    
     try:
         repository = DriverRepository(db)
 
@@ -26,7 +26,9 @@ def test_driver_repository_persists_driver():
         assert fetched_driver.name == "Integration Test Driver"
         assert fetched_driver.nationality == "Test Nationality"
 
-        drivers = repository.list_all()
+        # Use limit=200 to ensure we capture the newly created driver
+        # (database may have many drivers from previous test runs)
+        drivers = list(repository.list_all(limit=200))
 
         assert any(
             existing.driver_id == created_driver.driver_id

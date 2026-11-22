@@ -5,7 +5,7 @@ from app.database.repositories.team_repository import TeamRepository
 
 def test_team_repository_persists_team():
     db = SessionLocal()
-
+    
     try:
         repository = TeamRepository(db)
 
@@ -26,7 +26,9 @@ def test_team_repository_persists_team():
         assert fetched_team.name == "Integration Test Team"
         assert fetched_team.base_country == "Test Country"
 
-        teams = repository.list_all()
+        # Use limit=200 to ensure we capture the newly created team
+        # (database may have many teams from previous test runs)
+        teams = list(repository.list_all(limit=200))
 
         assert any(
             existing.team_id == created_team.team_id

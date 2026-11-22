@@ -4,7 +4,7 @@ from app.database.services.track_service import TrackService
 
 def test_track_service_creates_reads_lists_and_deletes_track():
     db = SessionLocal()
-
+    
     try:
         service = TrackService(db)
 
@@ -22,7 +22,8 @@ def test_track_service_creates_reads_lists_and_deletes_track():
         assert fetched_track is not None
         assert fetched_track.name == "Track Service Integration Test"
 
-        tracks = service.list_tracks(limit=100)
+        # Use limit=500 to ensure we capture the newly created track
+        tracks = service.list_tracks(limit=500)
 
         assert any(
             track.track_id == created_track.track_id

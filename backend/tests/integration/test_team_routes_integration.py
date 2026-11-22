@@ -30,7 +30,7 @@ def test_team_routes_work_end_to_end():
     assert get_response.json()["team_id"] == team_id
     assert get_response.json()["name"] == "Team API Integration Test"
 
-    list_response = client.get("/api/v1/teams")
+    list_response = client.get("/api/v1/teams?limit=100")
 
     assert list_response.status_code == 200
     assert any(

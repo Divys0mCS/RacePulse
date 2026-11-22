@@ -8,9 +8,10 @@ from app.schemas.telemetry import TelemetryAnalysisResponse
 from app.services.telemetry_service import TelemetryService
 
 router = APIRouter(
-    prefix="/api/v1/telemetry",
     tags=["telemetry"],
 )
+
+
 
 
 @router.get(

@@ -11,6 +11,27 @@ class LapAlreadyExistsError(ValueError):
     """Raised when a lap already exists for a session, driver, and lap number."""
 
 
+class LapNotFoundError(ValueError):
+    """Raised when a lap is not found."""
+
+
+class InvalidSessionError(ValueError):
+    """Raised when the session is invalid."""
+
+
+class InvalidDriverError(ValueError):
+    """Raised when the driver is invalid."""
+
+
+class InvalidTeamError(ValueError):
+    """Raised when the team is invalid."""
+
+
+class InvalidLapDataError(ValueError):
+    """Raised when the lap data provided is invalid."""
+    pass
+
+
 class LapService:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -33,17 +54,17 @@ class LapService:
         session = self.session_repository.get_by_id(session_id)
 
         if session is None:
-            raise ValueError(f"Session {session_id} does not exist")
+            raise InvalidSessionError(f"Session {session_id} does not exist")
 
         driver = self.driver_repository.get_by_id(driver_id)
 
         if driver is None:
-            raise ValueError(f"Driver {driver_id} does not exist")
+            raise InvalidDriverError(f"Driver {driver_id} does not exist")
 
         team = self.team_repository.get_by_id(team_id)
 
         if team is None:
-            raise ValueError(f"Team {team_id} does not exist")
+            raise InvalidTeamError(f"Team {team_id} does not exist")
 
         existing_lap = self.repository.get_by_session_driver_lap(
             session_id,

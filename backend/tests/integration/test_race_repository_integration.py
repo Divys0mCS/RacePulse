@@ -8,7 +8,7 @@ from app.database.repositories.race_repository import RaceRepository
 
 def test_race_repository_persists_race_with_track():
     db = SessionLocal()
-
+    
     try:
         track = TrackModel(
             name="Race Repository Test Circuit",
@@ -16,7 +16,6 @@ def test_race_repository_persists_race_with_track():
             length_km=5.500,
             number_of_corners=16,
         )
-
         db.add(track)
         db.flush()
 
@@ -45,7 +44,9 @@ def test_race_repository_persists_race_with_track():
         assert fetched_race.track_id == track.track_id
         assert fetched_race.race_date == date(2026, 9, 30)
 
-        races = repository.list_all()
+        # Use limit=200 to ensure we capture the newly created race
+        # (database may have many races from previous test runs)
+        races = list(repository.list_all(limit=200))
 
         assert any(
             existing.race_id == created_race.race_id

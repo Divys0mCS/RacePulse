@@ -168,7 +168,7 @@ def test_list_races_rejects_invalid_limit():
     try:
         client = TestClient(app)
 
-        response = client.get("/api/v1/races?limit=101")
+        response = client.get("/api/v1/races?limit=1001")
 
         assert response.status_code == 422
         service.list_races.assert_not_called()
@@ -254,4 +254,4 @@ def test_update_race():
         )
 
     finally:
-        app.dependency_overrides.clear()
+        app.dependency_overrides.clear()
