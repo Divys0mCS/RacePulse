@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool
 from app.config.settings import settings
 from app.database.base import Base
 from app.database.models import TrackModel
+from app.database.connection_args import get_connect_args
 
 
 config = context.config
@@ -41,16 +42,17 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
+        """Run migrations in 'online' mode."""
 
-    connectable = engine_from_config(
+        connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-    )
+        connect_args=get_connect_args(),
+)
 
-    with connectable.connect() as connection:
-        context.configure(
+        with connectable.connect() as connection:
+            context.configure(
             connection=connection,
             target_metadata=target_metadata,
         )
