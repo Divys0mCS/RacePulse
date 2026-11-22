@@ -10,6 +10,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql+pg8000://racepulse:racepulse@localhost:5432/racepulse_test
+      TEST_DATABASE_URL: postgresql+pg8000://racepulse:racepulse@localhost:5432/racepulse_test
+      CORS_ORIGINS: http://localhost:3000
+      ENVIRONMENT: test
+      SECRET_KEY: test-secret-key
     services:
       postgres:
         image: postgres:15
