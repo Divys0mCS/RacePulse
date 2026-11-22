@@ -4,7 +4,7 @@ from app.database.services.driver_service import DriverService
 
 def test_driver_service_creates_reads_lists_and_deletes_driver():
     db = SessionLocal()
-
+    
     try:
         service = DriverService(db)
 
@@ -21,7 +21,8 @@ def test_driver_service_creates_reads_lists_and_deletes_driver():
         assert fetched_driver.name == "Driver Service Integration Test"
         assert fetched_driver.nationality == "Test Nationality"
 
-        drivers = service.list_drivers()
+        # Use limit=200 to ensure we capture the newly created driver
+        drivers = service.list_drivers(limit=200)
 
         assert any(
             driver.driver_id == created_driver.driver_id

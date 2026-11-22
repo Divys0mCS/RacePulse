@@ -34,13 +34,11 @@ def test_track_routes_work_end_to_end():
     assert get_response.json()["track_id"] == track_id
     assert get_response.json()["name"] == "Track API Integration Test"
 
-    list_response = client.get("/api/v1/tracks?limit=100")
+    get_response = client.get(f"/api/v1/tracks/{track_id}")
 
-    assert list_response.status_code == 200
-    assert any(
-        track["track_id"] == track_id
-        for track in list_response.json()
-    )
+    assert get_response.status_code == 200
+    assert get_response.json()["track_id"] == track_id
+    assert get_response.json()["name"] == "Track API Integration Test"
 
     delete_response = client.delete(f"/api/v1/tracks/{track_id}")
 

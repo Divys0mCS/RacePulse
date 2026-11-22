@@ -69,15 +69,12 @@ def test_create_lap():
         app.dependency_overrides.clear()
 
 
-def test_create_lap_raises_500_when_dependency_fails():
+def test_create_lap_raises_422_on_invalid_dependency():
+    """Bad input / unexpected dependency failure should return 422."""
+    from app.database.services.lap_service import InvalidSessionError
     service = MagicMock()
-    service.create_lap.side_effect = ValueError("Session 999 does not exist")
-
-    app.dependency_overrides[get_lap_service] = lambda: service
-
-    try:
+    service.create_lap.side_effect = InvalidSessionError("Session 999 does not exist")    app.dependency_overrides[get_lap_service] = lambda: service    try:
         client = TestClient(app)
-
         response = client.post("/api/v1/laps", json={
             "session_id": 999,
             "driver_id": 20,
@@ -88,22 +85,17 @@ def test_create_lap_raises_500_when_dependency_fails():
             "sector_2_time_seconds": 30.0,
             "sector_3_time_seconds": 30.0,
         })
-
-        assert response.status_code == 500
-
+        assert response.status_code == 422
     finally:
         app.dependency_overrides.clear()
 
 
-def test_create_lap_raises_500_on_duplicate():
+def test_create_lap_raises_409_on_duplicate():
+    """Duplicate lap should return 409 Conflict."""
+    from app.database.services.lap_service import LapAlreadyExistsError
     service = MagicMock()
-    service.create_lap.side_effect = Exception("Lap already exists")
-
-    app.dependency_overrides[get_lap_service] = lambda: service
-
-    try:
+    service.create_lap.side_effect = LapAlreadyExistsError("Lap already exists for this session, driver, and lap number")    app.dependency_overrides[get_lap_service] = lambda: service    try:
         client = TestClient(app)
-
         response = client.post("/api/v1/laps", json={
             "session_id": 10,
             "driver_id": 20,
@@ -114,10 +106,26 @@ def test_create_lap_raises_500_on_duplicate():
             "sector_2_time_seconds": 31.210,
             "sector_3_time_seconds": 31.015,
         })
+        assert response.status_code == 409    finally:
+        app.dependency_overrides.clear()
 
-        assert response.status_code == 500
 
-    finally:
+def test_create_lap_raises_500_on_unexpected_service_error():
+    """Unexpected service/database exception should return 500."""
+    service = MagicMock()
+    service.create_lap.side_effect = RuntimeError("Unexpected database failure")    app.dependency_overrides[get_lap_service] = lambda: service    try:
+        client = TestClient(app)
+        response = client.post("/api/v1/laps", json={
+            "session_id": 10,
+            "driver_id": 20,
+            "team_id": 30,
+            "lap_number": 5,
+            "lap_time_seconds": 92.345,
+            "sector_1_time_seconds": 30.120,
+            "sector_2_time_seconds": 31.210,
+            "sector_3_time_seconds": 31.015,
+        })
+        assert response.status_code == 500    finally:
         app.dependency_overrides.clear()
 
 

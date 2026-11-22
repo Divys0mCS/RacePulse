@@ -28,8 +28,9 @@ def test_driver_routes_work_end_to_end():
 
     assert get_response.status_code == 200
     assert get_response.json()["driver_id"] == driver_id
+    assert get_response.json()["name"] == "Driver API Integration Test"
 
-    list_response = client.get("/api/v1/drivers")
+    list_response = client.get("/api/v1/drivers?limit=100")
 
     assert list_response.status_code == 200
     assert any(

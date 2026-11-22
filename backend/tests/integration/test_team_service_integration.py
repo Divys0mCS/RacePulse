@@ -4,7 +4,7 @@ from app.database.services.team_service import TeamService
 
 def test_team_service_creates_reads_lists_and_deletes_team():
     db = SessionLocal()
-
+    
     try:
         service = TeamService(db)
 
@@ -21,7 +21,8 @@ def test_team_service_creates_reads_lists_and_deletes_team():
         assert fetched_team.name == "Team Service Integration Test"
         assert fetched_team.base_country == "Test Country"
 
-        teams = service.list_teams()
+        # Use limit=200 to ensure we capture the newly created team
+        teams = service.list_teams(limit=200)
 
         assert any(
             team.team_id == created_team.team_id
