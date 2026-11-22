@@ -12,9 +12,9 @@ pytest>=9.1
 # ------------------------------------------------------------
 # Phase 2 — Data Analytics
 # ------------------------------------------------------------
-# numpy>=2.2
-# pandas>=2.3
-# scipy>=1.15
+numpy>=2.2          # core array math for the analytics engine
+scikit-learn>=1.6   # prediction / expected-speed models (pulls in scipy)
+# pandas>=2.3       # add only when genuinely needed
 plotly>=6.0
 
 # ------------------------------------------------------------
@@ -55,5 +55,5 @@ pg8000>=1.31
 # Phase 9 — Testing / Quality (extras beyond base pytest)
 # ------------------------------------------------------------
 # pytest-cov>=7.1
-# httpx>=0.28   # for FastAPI TestClient
+httpx>=0.28   # for FastAPI TestClient
 # ruff>=0.16
